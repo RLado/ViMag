@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+
+<h1>Vibrolab</h1>
+
+<p>Testing the viability of working with HTML and JS.</p>
+
+<video id="video" width="640">
+    <source src="test_vid.mp4" type="video/mp4">
+</video> 
+
+<script>
+    const video = document.getElementById('video');
+    video.addEventListener("click", getClickPosition, false);
+
+    function getClickPosition(e) {
+        var video_coords = video.getBoundingClientRect();
+        var xPosition = e.clientX - video_coords.left;
+        var yPosition = e.clientY - video_coords.top;
+        alert('pos x:' + xPosition + '/' + video_coords.width + ' pos y: ' + yPosition + '/' + video_coords.height);
+    }
+</script>
+
+<button id="play_button" onclick="video.play()">Play</button>
+<button id="pause_button" onclick="alert('Screw you Flanders!')">Pause</button>
+
+</body>
+</html>
