@@ -25,13 +25,18 @@ const createWindow = () => {
                     label: 'New project',
                 },
                 {
-                    label: 'Load project'
+                    label: 'Load project',
+                    accelerator: 'CmdOrCtrl+O',
+                    click() {
+                        load_project(win);
+                    }
                 },
                 {
-                    label: 'Save project'
-                },
-                {
-                    label: 'Save as new project'
+                    label: 'Save project',
+                    accelerator: 'CmdOrCtrl+S',
+                    click() {
+                        save_project(win);
+                    }
                 },
                 {
                     type: 'separator'
@@ -40,8 +45,8 @@ const createWindow = () => {
                     label: 'Import video',
                     accelerator: 'CmdOrCtrl+I',
                     click() { 
-                        let vpath = import_vid(win);
-                    }
+                        import_vid(win);
+                    },
                 },
                 {
                     type: 'separator'
@@ -91,16 +96,10 @@ app.on('window-all-closed', () => {
 async function import_vid(MainWindow){
     const {dialog} = require('electron');
     let options = {
-        // See place holder 1 in above image
         title : "Import video", 
-        
-        // See place holder 2 in above image
         defaultPath : ".",
-        
-        // See place holder 3 in above image
         buttonLabel : "Import",
         
-        // See place holder 4 in above image
         filters :[
             {name: 'Movies', extensions: ['mkv', 'avi', 'mp4']},
             {name: 'All Files', extensions: ['*']}
@@ -109,9 +108,59 @@ async function import_vid(MainWindow){
     };
 
     dialog.showOpenDialog(MainWindow, options).then((filePaths) => {
-        //console.log({filePaths})
+        console.log('Import dialog')
+        console.log({filePaths})
+
         if (!filePaths.canceled){
             MainWindow.webContents.send('vimport', filePaths.filePaths);
+        }
+    });
+}
+
+async function save_project(MainWindow){
+    const {dialog} = require('electron');
+    let options = {
+        title : "Save project", 
+        defaultPath : ".",
+        buttonLabel : "Save",
+        
+        filters :[
+            {name: 'VibroLab projects', extensions: ['vl']},
+            {name: 'All Files', extensions: ['*']}
+        ],
+        properties: ['saveFile']
+    };
+
+    dialog.showSaveDialog(MainWindow, options).then((filePaths) => {
+        console.log('Save dialog:')
+        console.log({filePaths})
+        
+        if (!filePaths.canceled){
+            MainWindow.webContents.send('save_path', filePaths.filePath);
+        }
+    });
+}
+
+async function load_project(MainWindow){
+    const {dialog} = require('electron');
+    let options = {
+        title : "Load project", 
+        defaultPath : ".",
+        buttonLabel : "Load",
+        
+        filters :[
+            {name: 'VibroLab projects', extensions: ['vl']},
+            {name: 'All Files', extensions: ['*']}
+        ],
+        properties: ['openFile']
+    };
+
+    dialog.showOpenDialog(MainWindow, options).then((filePaths) => {
+        console.log('Load dialog')
+        console.log({filePaths})
+
+        if (!filePaths.canceled){
+            MainWindow.webContents.send('load_path', filePaths.filePaths[0]);
         }
     });
 }

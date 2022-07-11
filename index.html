@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html>
 
-<script type = "text/javascript" src="renderer.js"></script>
-
 <body>
 
 <h1>Vibrolab</h1>
@@ -13,26 +11,10 @@
     <source src="test_vid.mp4" type="video/mp4">
 </video> 
 
-<script>
-    const video = document.getElementById('video');
-    video.addEventListener("click", getClickPosition, false);
-
-    function getClickPosition(e) {
-        var video_coords = video.getBoundingClientRect();
-        var xPosition = e.clientX - video_coords.left;
-        var yPosition = e.clientY - video_coords.top;
-        alert('pos x:' + xPosition + '/' + video_coords.width + ' pos y: ' + yPosition + '/' + video_coords.height);
-    }
-</script>
-
-<script>
-    require('electron').ipcRenderer.on('vpath', (event, message) => {
-        alert(message)
-    })
-</script>
-
 <button id="play_button" onclick="video.play()">Play</button>
-<button id="pause_button" onclick="alert('Screw you Flanders!')">Pause</button>
+<button id="pause_button" onclick="video.pause()">Pause</button>
 
 </body>
+
+<script type = "text/javascript" src="renderer.js"></script>
 </html>
