@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 
+<script type = "text/javascript" src="renderer.js"></script>
+
 <body>
 
 <h1>Vibrolab</h1>
@@ -21,6 +23,12 @@
         var yPosition = e.clientY - video_coords.top;
         alert('pos x:' + xPosition + '/' + video_coords.width + ' pos y: ' + yPosition + '/' + video_coords.height);
     }
+</script>
+
+<script>
+    require('electron').ipcRenderer.on('vpath', (event, message) => {
+        alert(message)
+    })
 </script>
 
 <button id="play_button" onclick="video.play()">Play</button>
