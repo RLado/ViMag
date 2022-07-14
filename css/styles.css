@@ -1,0 +1,127 @@
+.iconbar {
+  height: 100%;
+  width: 50px;
+  position: fixed;
+  z-index: 0;
+  top: 0;
+  left: 0;
+  background-color: #4d4d4d;
+  overflow-x: hidden;
+  padding-top: 20px;
+}
+
+.iconbar a {
+  display: block; /* Make the links appear below each other instead of side-by-side */
+  text-align: center; /* Center-align text */
+  padding: 12px; /* Add some padding */
+  transition: all 0.3s ease; /* Add transition for hover effects */
+  color: white; /* White text color */
+  font-size: 32px; /* Increased font-size */
+}
+
+.iconbar a:hover {
+  background-color: #205fac; /* Add a hover color */
+}
+
+.ibactive {
+  background-color: #203794; /* Add an active/current color */
+}
+
+.sidenav {
+  height: 100%;
+  width: 160px;
+  margin-left: 50px; /* Same as IconBar */
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #474747;
+  overflow-x: hidden;
+  padding-top: 20px;
+  transition: .5s;
+}
+
+.sidenav p {
+  padding: 6px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 12px;
+  color: #d2d2d2;
+  display: block;
+}
+
+.sidenav p:hover {
+  color: #b8b8b8;
+}
+
+/* Style the buttons that are used to open and close the accordion panel */
+.accordion {
+  color: #d2d2d2;
+  background-color: #474747;
+  cursor: pointer;
+  padding: 10px;
+  width: 100%;
+  text-align: left;
+  border: none;
+  outline: none;
+  transition: 0.4s;
+}
+
+/* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
+.accordion:hover {
+  background-color: #5d5d5d;
+}
+
+/* Style the accordion panel. Note: hidden by default */
+.accordion_item {
+  padding: 0 10px;
+  color: #d2d2d2;
+  display: none;
+  overflow: hidden;
+} 
+
+.accordion:hover {
+  background-color: #5d5d5d;
+}
+  
+.main {
+  text-align: center; /* Center-align text */
+  z-index: 4;
+  margin-left: 210px; /* Same as the width of the sidenav */
+  font-size: 16px; /* Increased text to enable scrolling */
+  padding: 0px 10px;
+  transition: .5s;
+}
+
+.data_tab {
+  height: 20px;
+  width: calc(100% - 160px - 50px - 10px * 2); /* - Sidebar - IconBar - Padding */
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  border: 1px #000000;
+  border-style: solid none none none;
+  background-color: #c1c1c1;
+  overflow-y: hidden;
+  text-align: center; /* Center-align text */
+  z-index: 3;
+  margin-left: 210px; /* Same as the width of the sidenav */
+  font-size: 16px; /* Increased text to enable scrolling */
+  padding: 0px 10px;
+  transition: .5s;
+}
+
+.discrete_button {
+  border: 0px none rgba(0, 0, 0, 0);
+  background-color: rgba(0,0,0,0.01);
+}
+
+body {
+  font-family:Helvetica,Arial,sans-serif;
+  background-color: #bfbfbf;
+  color:#000000;
+}
+
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}

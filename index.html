@@ -1,20 +1,70 @@
 <!DOCTYPE html>
 <html>
 
+<head>
+    <link rel="stylesheet" href="css/styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' localhost:* ws://localhost:*;">
+</head>
+
 <body>
 
-<h1>Vibrolab</h1>
+    <div id="Iconbar" class="iconbar">        
+        <a class="ibactive" href="#" onclick="toggleNav()">&#9776;</a>
+    </div> 
 
-<p>Testing the viability of working with HTML and JS.</p>
+    <div id="Sidebar" class="sidenav">
+        <!-- <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a> -->
+        <button class="accordion">Item 1</button>
+          <div class="accordion_item">
+            <p>Item 1.1</p>
+          </div>
+        <button class="accordion">Item 2</button>
+          <div class="accordion_item">
+            <p>Item 2.1</p>
+            <p>Item 2.2</p>
+          </div>
+        <button class="accordion">Item 3</button>
+          <div class="accordion_item">
+            <button class="accordion">Item 3.1</button>
+            <div class="accordion_item">
+              <p>Item 3.1.1</p>
+              <p>Item 3.1.2</p>
+            </div>
+          </div>
+    </div>
+        
+    <div id="main" class="main">
+        <!--
+        <h1>Vibrolab</h1>
+        <p>Testing the viability of working with HTML and JS.</p>
+        -->
+        <p>
+          <video id="video" width="80%">
+            <source src="test_vid.mp4" type="video/mp4">
+          </video> 
+        </p>
+          <button id="play-pause" onclick="togglePlay()">&#x23EF;</button>
+          <!--
+          <button id="play_button" onclick="video.play()">Play</button>
+          <button id="pause_button" onclick="video.pause()">Pause</button>
+          -->
+        </p>
+    </div>
 
-<video id="video" width="640">
-    <source src="test_vid.mp4" type="video/mp4">
-</video> 
-
-<button id="play_button" onclick="video.play()">Play</button>
-<button id="pause_button" onclick="video.pause()">Pause</button>
+    <div id="data_tab" class="data_tab">
+      <button id="toggle_data_tab" onclick="toggleDataTab()" height="10px" class="discrete_button">
+        <img id="data_tab_arrow" src="img/UpArrow.png" height = "10px"/>
+      </button>
+      
+      <canvas id="Chart1" height="50%"></canvas>
+      <canvas id="Chart2" height="50%"></canvas>
+      <canvas id="Chart3" height="50%"></canvas>
+    </div>
 
 </body>
 
-<script type = "text/javascript" src="renderer.js"></script>
+<script type = "text/javascript" src="js/renderer.js"></script>
+<script type="text/javascript" src="node_modules/chart.js/dist/chart.js"></script>
+<script type = "text/javascript" src="js/charts.js"></script>
 </html>
