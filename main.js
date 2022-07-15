@@ -23,6 +23,10 @@ const createWindow = () => {
             submenu: [
                 {
                     label: 'New project',
+                    accelerator: 'CmdOrCtrl+N',
+                    click(){
+                        win.webContents.send('new_prj', true);
+                    }
                 },
                 {
                     label: 'Load project',

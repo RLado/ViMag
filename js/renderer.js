@@ -3,61 +3,6 @@ const {ipcRenderer} = require('electron');
 let {PythonShell} = require('python-shell');
 fs = require('fs');
 
-// State variables
-let togglenav_c = true;
-let toggledatatab_c = true;
-let prj_dict = {
-    Name: "Test",
-    Age: 69,
-    Job: "Freelancer",
-    Skills : "JavaScript"
-};
-
-// Slice selector
-const video = document.getElementById('video');
-video.addEventListener("click", getClickPosition, false);
-
-// Video import
-ipcRenderer.on('vimport', function(event, args){
-    video.src = args[0];
-    python_test();
-  });
-
-// Save project
-ipcRenderer.on('save_path', function(event, args){
-    let prj_dict_str = JSON.stringify(prj_dict);
-    fs.writeFile(args, prj_dict_str, 'utf8', function (err) {
-        if (err) return console.log(err);
-        console.log('Saved');
-    });
-});
-
-// Load project
-ipcRenderer.on('load_path', function(event, args){
-    let prj_dict_str = fs.readFileSync(args, 'utf-8').toString();
-    prj_dict = JSON.parse(prj_dict_str);
-    console.log({prj_dict});
-});
-
-// Accordions
-let acc = document.getElementsByClassName("accordion");
-
-for (let i = 0; i < acc.length; i++) {
-  acc[i].addEventListener("click", function() {
-    /* Toggle between adding and removing the "active" class,
-    to highlight the button that controls the panel */
-    this.classList.toggle("active");
-
-    /* Toggle between hiding and showing the active panel */
-    var panel = this.nextElementSibling;
-    if (panel.style.display === "block") {
-      panel.style.display = "none";
-    } else {
-      panel.style.display = "block";
-    }
-  });
-} 
-
 
 // Functions -------------------------------------------------------------------
 function python_test(){
@@ -134,3 +79,173 @@ function togglePlay(){
         video.play();
     }
 }
+
+function show_vid(path){
+    video.src = path;
+    console.log('video: '+ path);
+}
+
+function update_accordions(){ // Reads project object to populate the accordions
+    var target = document.getElementById("Sidebar");
+    target.innerHTML = ""; // Empty out the code
+    for (let i=0; i < prj.items.length; i++) { // Level 1 features
+        // Video
+        if (prj.items[i].constructor.name == 'video_datum'){
+            target.innerHTML += '<button id=\"'+prj.items[i].name+'\"class=\"accordion\" ondblclick = "show_vid(\'' + prj.items[i].path + '\')">'+prj.items[i].name+'</button>\n';
+            target.innerHTML += '<div class=\"accordion_item\">\n';
+        }
+        // Graph
+        else {
+            target.innerHTML += '<button id=\"'+prj.items[i].name+'\"class=\"accordion\">'+prj.items[i].name+'</button>\n';
+            target.innerHTML += '<div class=\"accordion_item\">\n';
+        }
+
+        for (let j=0; j < prj.items[i].items.length; j++) { // Level 2 features
+            target.innerHTML += '<button id=\"'+prj.items[i].items[j].name+'\"class=\"accordion\">'+prj.items[i].items[j].name+'</button>\n';
+            target.innerHTML += '<div class=\"accordion_item\">\n';
+            for (let k=0; k < prj.items[i].items[j].items.length; k++) { // Level 3 features
+                target.innerHTML += '<button id=\"'+prj.items[i].items[j].items[k].name+'\"class=\"accordion\">'+prj.items[i].items[j].items[k].name+'</button>\n';
+                //target.innerHTML += '<div class=\"accordion_item\">\n';
+            }
+        }
+    }
+}
+
+// Classes ---------------------------------------------------------------------
+class prj_dict {
+    constructor(name, saved=false, items=[]){
+        this.name = name;
+        this.saved = saved;
+        this.items = items;
+    }
+}
+
+class video_datum {
+    constructor(name, path, items = [], start_time = 0, end_time = -1){
+        this.name = name;
+        this.path = path;
+        this.items = items;
+        this.start_time = start_time;
+        this.end_time = end_time;
+    }
+}
+
+class slice {
+    constructor(name, coord, processed = false, path_vmm = null, slice_path = null, items = []){
+        this.name = name;
+        this.coord = coord;
+        this.processed = processed;
+        this.path_vmm = path_vmm;
+        this.slice_path = slice_path;
+        this.items = items;
+    }
+}
+
+class signal {
+    constructor(name, csv){
+        this.name = name;
+        this.csv = csv;
+    }
+}
+
+class FFT {
+    constructor(name, csv){
+        this.name = name;
+        this.csv = csv;
+    }
+}
+
+class signal_graph {
+    constructor(name, sources){
+        this.name = name;
+        this.sources = sources;
+    }
+}
+
+class FFT_graph {
+    constructor(name, sources){
+        this.name = name;
+        this.sources = sources;
+    }
+}
+
+// Menu interactions -----------------------------------------------------------
+
+// New project
+ipcRenderer.on('new_prj', function(event, args){
+    if(args && !prj.saved){
+        let confirmed = confirm('Are you sure you want to create a new project? All unsaved changes will be lost');
+        if (confirmed){
+            prj = new prj_dict('new_project');
+        }
+    }else if(args && prj.saved){
+        prj = new prj_dict('new_project');
+    }
+    update_accordions();
+});
+
+// Video import
+ipcRenderer.on('vimport', function(event, args){
+    for (let i = 0; i < args.length; i++) {
+        prj.items.push(new video_datum(args[i].split('/')[args[i].split('/').length - 1].split('.')[0],args[i]));
+        video.src = args[i];
+    }
+    update_accordions();
+});
+
+// Save project
+ipcRenderer.on('save_path', function(event, args){
+    prj.saved = true;
+    prj.name = args.split('/')[args.split('/').length - 1];
+
+    console.log({ prj });
+
+    // Serialize project object
+    let prj_dict_str = JSON.stringify(prj);
+    
+    // Write to file
+    fs.writeFile(args, prj_dict_str, 'utf8', function (err) {
+        if (err){
+            return console.log(err);
+        } else{
+            console.log('Saved');
+        }
+    });
+});
+
+// Load project
+ipcRenderer.on('load_path', function(event, args){
+    let prj_dict_str = fs.readFileSync(args, 'utf-8').toString();
+    prj = JSON.parse(prj_dict_str);
+    console.log({prj});
+    update_accordions();
+});
+
+// Accordions
+let acc = document.getElementsByClassName("accordion");
+
+for (let i = 0; i < acc.length; i++) {
+  acc[i].addEventListener("click", function() {
+    /* Toggle between adding and removing the "active" class,
+    to highlight the button that controls the panel */
+    this.classList.toggle("active");
+
+    /* Toggle between hiding and showing the active panel */
+    var panel = this.nextElementSibling;
+    if (panel.style.display === "block") {
+      panel.style.display = "none";
+    } else {
+      panel.style.display = "block";
+    }
+  });
+}
+
+// Main ------------------------------------------------------------------------
+// State variables
+let togglenav_c = true;
+let toggledatatab_c = true;
+let prj = new prj_dict('new_project');
+
+// Slice selector
+const video = document.getElementById('video');
+video.addEventListener("click", getClickPosition, false);
