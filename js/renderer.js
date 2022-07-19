@@ -1,5 +1,7 @@
 // Import ----------------------------------------------------------------------
 const {ipcRenderer} = require('electron');
+let Dialogs = require('dialogs'); // Don't like it
+const dialogs = Dialogs();
 let {PythonShell} = require('python-shell');
 fs = require('fs');
 
@@ -161,9 +163,63 @@ function find_data_by_name(name){ // 3 levels of search depth
     return [-1,-1,-1];
 }
 
+function prj_exists(name){ // Optimizable
+    return find_data_by_name(name)[0]!=-1 || find_data_by_name(name)[1]!=-1 || find_data_by_name(name)[2]!=-1;
+}
+
 function rename_prj_elem(elem){
     console.log(elem.id);
     console.log(find_data_by_name(elem.id));
+
+    let target = find_data_by_name(elem.id);
+    if (target[1] = -1){
+        dialogs.prompt("Rename:", prj.items[target[0]].name, r => {
+            if (prj_exists(r)){
+                alert('Already created an element named: '+r);
+                throw('Already existing name');
+            }
+            else if(r === undefined){
+                console.log('User canceled');
+            }
+            else{
+                prj.items[target[0]].name = r;
+                update_accordions();
+            }
+        })
+        //prj.items[target[0]].name = prompt("Rename:", prj.items[target[0]].name);
+    }
+    else if(target[2] = -1){
+        dialogs.prompt("Rename:", prj.items[target[0]].items[target[1]].name, r => {
+            if (prj_exists(r)){
+                alert('Already created an element named: '+r);
+                throw('Already existing name');
+            }
+            else if(r === undefined){
+                console.log('User canceled');
+            }
+            else{
+                prj.items[target[0]].items[target[1]].name = r;
+                update_accordions();
+            }
+        })
+        //prj.items[target[0]].items[target[1]].name = prompt("Rename:", prj.items[target[0]].items[target[1]].name);
+    }
+    else{
+        dialogs.prompt("Rename:", prj.items[target[0]].items[target[1]].items[target[2]].name, r => {
+            if (prj_exists(r)){
+                alert('Already created an element named: '+r);
+                throw('Already existing name');
+            }
+            else if(r === undefined){
+                console.log('User canceled');
+            }
+            else{
+                prj.items[target[0]].items[target[1]].items[target[2]].name = r;
+                update_accordions();
+            }
+        })
+        //prj.items[target[0]].items[target[1]].items[target[2]].name = prompt("Rename:", prj.items[target[0]].items[target[1]].items[target[2]].name);
+    }
 }
 
 function delete_prj_elem(elem){
@@ -256,7 +312,7 @@ ipcRenderer.on('vimport', function(event, args){
     for (let i = 0; i < args.length; i++) {
         imp_vid_name_temp = args[i].split('/')[args[i].split('/').length - 1].split('.')[0]
         // Check if importing two elements with the same name
-        if (find_data_by_name(imp_vid_name_temp)[0]!=-1 || find_data_by_name(imp_vid_name_temp)[1]!=-1 || find_data_by_name(imp_vid_name_temp)[2]!=-1){
+        if (prj_exists(imp_vid_name_temp)){
             alert('Already created an element named: '+imp_vid_name_temp);
             //throw('Already created an element named: '+imp_vid_name_temp);
         }

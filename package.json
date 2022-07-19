@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "chart.js": "^3.8.0",
+    "dialogs": "^2.0.1",
     "python-shell": "^3.0.1"
   }
 }
