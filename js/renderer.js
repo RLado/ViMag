@@ -93,7 +93,7 @@ function update_accordions(){ // Reads project object to populate the accordions
 
     for (let i=0; i < prj.items.length; i++) { // Level 1 features
         // Video
-        console.log(prj.items[i].path);
+        //console.log(prj.items[i].path);
         if (prj.items[i].type == 'video_datum'){
             target.innerHTML += '<button id="'+prj.items[i].name+'"class="accordion" ondblclick = "show_vid(\'' + prj.items[i].path + '\')" oncontextmenu = "sb_ctx_rightClick(' + prj.items[i].name + ')">'+prj.items[i].name+'</button>\n';
             target.innerHTML += '<div class="accordion_item">\n';
@@ -172,6 +172,7 @@ function rename_prj_elem(elem){
     console.log(find_data_by_name(elem.id));
 
     let target = find_data_by_name(elem.id);
+
     if (target[1] = -1){
         dialogs.prompt("Rename:", prj.items[target[0]].name, r => {
             if (prj_exists(r)){
@@ -223,8 +224,19 @@ function rename_prj_elem(elem){
 }
 
 function delete_prj_elem(elem){
-    console.log(elem.id);
-    console.log(find_data_by_name(elem.id));
+    let target = find_data_by_name(elem.id);
+
+    if (target[1] = -1){
+        prj.items.splice(target[0],1);
+    }
+    else if (target[2] = -1){
+        prj.items[target[0]].items.splice(target[1],1);
+    }
+    else{
+        prj.items[target[0]].items[target[1]].items.splice(target[2],1);
+    }
+
+    update_accordions();
 }
 
 // Classes ---------------------------------------------------------------------
