@@ -100,6 +100,10 @@ function update_accordions(){ // Reads project object to populate the accordions
             target.innerHTML += '<button id=\"'+prj.items[i].name+'\"class=\"accordion\">'+prj.items[i].name+'</button>\n';
             target.innerHTML += '<div class=\"accordion_item\">\n';
         }
+        // Add right click action
+        document.getElementById(prj.items[i].name).oncontextmenu = sb_ctx_rightClick;
+        console.log("update accordions");
+        console.log(prj.items[i].name);
 
         for (let j=0; j < prj.items[i].items.length; j++) { // Level 2 features
             target.innerHTML += '<button id=\"'+prj.items[i].items[j].name+'\"class=\"accordion\">'+prj.items[i].items[j].name+'</button>\n';
@@ -110,6 +114,26 @@ function update_accordions(){ // Reads project object to populate the accordions
                 //target.innerHTML += '<div class=\"accordion_item\">\n';
             }
         }
+    }
+}
+
+function hide_sb_ctx_Menu() {
+    document.getElementById("sidebarCxtMenu").style.display = "none";
+}
+
+function sb_ctx_rightClick(e) {
+    e.preventDefault(); // Prevent default right click action
+    console.log(this.id);
+
+    if (document.getElementById("sidebarCxtMenu").style.display == "block"){
+        hide_sb_ctx_Menu();
+    }
+    else {
+        var menu = document.getElementById("sidebarCxtMenu")
+            
+        menu.style.display = 'block';
+        menu.style.left = e.pageX + "px";
+        menu.style.top = e.pageY + "px";
     }
 }
 
@@ -287,3 +311,6 @@ let prj = new prj_dict('new_project');
 // Slice selector
 const video = document.getElementById('video');
 video.addEventListener("click", getClickPosition, false);
+
+// Sidebar context menu
+document.onclick = hide_sb_ctx_Menu;

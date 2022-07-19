@@ -81,7 +81,7 @@ const createWindow = () => {
                 }
             ]
         }
-    ]
+    ];
     
     const menu = Menu.buildFromTemplate(menu_template)
     Menu.setApplicationMenu(menu)
