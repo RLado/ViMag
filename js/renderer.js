@@ -91,27 +91,24 @@ function update_accordions(){ // Reads project object to populate the accordions
 
     for (let i=0; i < prj.items.length; i++) { // Level 1 features
         // Video
+        console.log(prj.items[i].path);
         if (prj.items[i].type == 'video_datum'){
-            target.innerHTML += '<button id=\"'+prj.items[i].name+'\"class=\"accordion\" ondblclick = "show_vid(\'' + prj.items[i].path + '\')">'+prj.items[i].name+'</button>\n';
-            target.innerHTML += '<div class=\"accordion_item\">\n';
+            target.innerHTML += '<button id="'+prj.items[i].name+'"class="accordion" ondblclick = "show_vid(\'' + prj.items[i].path + '\')" oncontextmenu = "sb_ctx_rightClick(' + prj.items[i].name + ')">'+prj.items[i].name+'</button>\n';
+            target.innerHTML += '<div class="accordion_item">\n';
         }
         // Graph
         else {
-            target.innerHTML += '<button id=\"'+prj.items[i].name+'\"class=\"accordion\">'+prj.items[i].name+'</button>\n';
-            target.innerHTML += '<div class=\"accordion_item\">\n';
+            target.innerHTML += '<button id="'+prj.items[i].name+'"class="accordion" oncontextmenu = "sb_ctx_rightClick(' + prj.items[i].name + ')">'+prj.items[i].name+'</button>\n';
+            target.innerHTML += '<div class="accordion_item">\n';
         }
-        // Add right click action
-        document.getElementById(prj.items[i].name).oncontextmenu = sb_ctx_rightClick;
-        console.log("update accordions");
-        console.log(prj.items[i].name);
 
         for (let j=0; j < prj.items[i].items.length; j++) { // Level 2 features
-            target.innerHTML += '<button id=\"'+prj.items[i].items[j].name+'\"class=\"accordion\">'+prj.items[i].items[j].name+'</button>\n';
-            target.innerHTML += '<div class=\"accordion_item\">\n';
+            target.innerHTML += '<button id="'+prj.items[i].items[j].name+'"class="accordion" oncontextmenu = "sb_ctx_rightClick(' + prj.items[i].name + ')">'+prj.items[i].items[j].name+'</button>\n';
+            target.innerHTML += '<div class="accordion_item">\n';
 
             for (let k=0; k < prj.items[i].items[j].items.length; k++) { // Level 3 features
-                target.innerHTML += '<button id=\"'+prj.items[i].items[j].items[k].name+'\"class=\"accordion\">'+prj.items[i].items[j].items[k].name+'</button>\n';
-                //target.innerHTML += '<div class=\"accordion_item\">\n';
+                target.innerHTML += '<button id="'+prj.items[i].items[j].items[k].name+'"class="accordion" oncontextmenu = "sb_ctx_rightClick(' + prj.items[i].name + ')">'+prj.items[i].items[j].items[k].name+'</button>\n';
+                //target.innerHTML += '<div class="accordion_item">\n';
             }
         }
     }
@@ -121,9 +118,8 @@ function hide_sb_ctx_Menu() {
     document.getElementById("sidebarCxtMenu").style.display = "none";
 }
 
-function sb_ctx_rightClick(e) {
-    e.preventDefault(); // Prevent default right click action
-    console.log(this.id);
+function sb_ctx_rightClick(elem) {
+    console.log({elem});
 
     if (document.getElementById("sidebarCxtMenu").style.display == "block"){
         hide_sb_ctx_Menu();
@@ -132,8 +128,8 @@ function sb_ctx_rightClick(e) {
         var menu = document.getElementById("sidebarCxtMenu")
             
         menu.style.display = 'block';
-        menu.style.left = e.pageX + "px";
-        menu.style.top = e.pageY + "px";
+        menu.style.left = elem.offsetWidth + "px";
+        menu.style.top = elem.offsetTop + "px";
     }
 }
 
