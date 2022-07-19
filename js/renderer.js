@@ -84,6 +84,7 @@ function togglePlay(){
 
 function show_vid(path){
     video.src = path;
+    video.poster = '';
     console.log('video: '+ path);
 }
 

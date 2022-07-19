@@ -92,6 +92,12 @@
   transition: .5s;
 }
 
+.video_bg {
+  background-color: #878787;
+  padding: 5px;
+  border-radius: 8px 8px 8px 8px;
+}
+
 .data_tab {
   height: 20px;
   width: calc(100% - 160px - 50px - 10px * 2); /* - Sidebar - IconBar - Padding */
