@@ -61,7 +61,7 @@ const createWindow = () => {
             ]
         },
 
-        {
+        /*{
             label: 'View',
             submenu: [
                 {
@@ -71,7 +71,7 @@ const createWindow = () => {
                     role: 'togglefullscreen'
                 }
             ]
-        },
+        },*/
         
         {
             role: 'help',
@@ -80,7 +80,7 @@ const createWindow = () => {
                     label: 'About'
                 }
             ]
-        }
+        },
     ];
     
     const menu = Menu.buildFromTemplate(menu_template)

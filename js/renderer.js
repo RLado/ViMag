@@ -119,14 +119,21 @@ function hide_sb_ctx_Menu() {
 }
 
 function sb_ctx_rightClick(elem) {
-    console.log({elem});
-
     if (document.getElementById("sidebarCxtMenu").style.display == "block"){
         hide_sb_ctx_Menu();
     }
     else {
-        var menu = document.getElementById("sidebarCxtMenu")
-            
+        let menu = document.getElementById("sidebarCxtMenu");
+
+        // Modify menu
+        menu.innerHTML = '';
+        menu.innerHTML +=
+        `<ul>
+        <li onclick="rename_prj_elem(${elem.id})"><a>Rename</a></li>
+        <li onclick="delete_prj_elem(${elem.id})"><a>Delete</a></li>
+        </ul>`;
+        
+        // Place menu on top of clicked element
         menu.style.display = 'block';
         menu.style.left = elem.offsetWidth + "px";
         menu.style.top = elem.offsetTop + "px";
@@ -152,6 +159,16 @@ function find_data_by_name(name){ // 3 levels of search depth
         }
     }
     return [-1,-1,-1];
+}
+
+function rename_prj_elem(elem){
+    console.log(elem.id);
+    console.log(find_data_by_name(elem.id));
+}
+
+function delete_prj_elem(elem){
+    console.log(elem.id);
+    console.log(find_data_by_name(elem.id));
 }
 
 // Classes ---------------------------------------------------------------------
