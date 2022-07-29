@@ -264,4 +264,5 @@ dist
 # Misc.
 trash/
 *.mp4
+*.mkv
 *.vl

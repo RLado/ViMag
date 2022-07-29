@@ -11,34 +11,49 @@
 }
 
 .iconbar a {
-  display: block; /* Make the links appear below each other instead of side-by-side */
-  text-align: center; /* Center-align text */
-  padding: 12px; /* Add some padding */
-  transition: all 0.3s ease; /* Add transition for hover effects */
-  color: white; /* White text color */
-  font-size: 32px; /* Increased font-size */
+  display: block;
+  /* Make the links appear below each other instead of side-by-side */
+  text-align: center;
+  /* Center-align text */
+  padding: 12px;
+  /* Add some padding */
+  transition: all 0.3s ease;
+  /* Add transition for hover effects */
+  color: white;
+  /* White text color */
+  font-size: 32px;
+  /* Increased font-size */
 }
 
 .iconbar a:hover {
-  background-color: #205fac; /* Add a hover color */
+  background-color: #205fac;
+  /* Add a hover color */
 }
 
 .ibactive {
-  background-color: #203794; /* Add an active/current color */
+  background-color: #203794;
+  /* Add an active/current color */
 }
 
 .sidenav {
-  height: 100%;
+  height: 97%;
+  /* Avoids a vertical scrollbar (for some reason) */
   width: 160px;
-  margin-left: 50px; /* Same as IconBar */
+  margin-left: 50px;
+  /* Same as IconBar */
   position: absolute;
   z-index: 1;
   top: 0;
   left: 0;
   background-color: #474747;
-  overflow-x: hidden;
+  overflow-x: auto;
+  /*hidden*/
   padding-top: 20px;
   transition: .5s;
+}
+
+.sidenav::-webkit-scrollbar {
+  height: 0px;
 }
 
 .sidenav p {
@@ -63,7 +78,7 @@
   text-align: left;
   border: none;
   outline: none;
-  transition: 0.4s;
+  transition: 0.5s;
 }
 
 /* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
@@ -77,18 +92,22 @@
   color: #d2d2d2;
   display: none;
   overflow: hidden;
-} 
+}
 
 .accordion:hover {
   background-color: #5d5d5d;
 }
-  
+
 .main {
-  text-align: center; /* Center-align text */
+  text-align: center;
+  /* Center-align text */
   z-index: 4;
-  margin-left: 210px; /* Same as the width of the sidenav */
-  font-size: 16px; /* Increased text to enable scrolling */
+  margin-left: 210px;
+  /* Same as the width of the sidenav */
+  font-size: 16px;
+  /* Increased text to enable scrolling */
   padding: 0px 10px;
+  overflow: hidden;
   transition: .5s;
 }
 
@@ -98,9 +117,23 @@
   border-radius: 8px 8px 8px 8px;
 }
 
+.main_video {
+  position: relative;
+  width: 95%;
+  z-index: 4;
+}
+
+.video_canvas {
+  position: absolute;
+  z-index: 5;
+  background-color: #00000000;
+  visibility: hidden;
+}
+
 .data_tab {
   height: 20px;
-  width: calc(100% - 160px - 50px - 10px * 2); /* - Sidebar - IconBar - Padding */
+  width: calc(100% - 160px - 50px - 10px * 2);
+  /* - Sidebar - IconBar - Padding */
   position: fixed;
   bottom: 0;
   right: 0;
@@ -108,33 +141,55 @@
   border-style: solid none none none;
   background-color: #c1c1c1;
   overflow-y: hidden;
-  text-align: center; /* Center-align text */
-  z-index: 3;
-  margin-left: 210px; /* Same as the width of the sidenav */
-  font-size: 16px; /* Increased text to enable scrolling */
+  text-align: center;
+  /* Center-align text */
+  z-index: 10;
+  margin-left: 210px;
+  /* Same as the width of the sidenav */
+  font-size: 16px;
+  /* Increased text to enable scrolling */
   padding: 0px 10px;
   transition: .5s;
 }
 
+.data_tab_contents {
+  text-align: left;
+}
+
+.slice_img {
+  text-align: center;
+  margin-left: 5%;
+  margin-right: 5%;
+  width: 90%;
+  height: 200px;
+}
+
 .discrete_button {
   border: 0px none rgba(0, 0, 0, 0);
-  background-color: rgba(0,0,0,0.01);
+  background-color: rgba(0, 0, 0, 0.01);
 }
 
 body {
-  font-family:Helvetica,Arial,sans-serif;
+  overflow-x: hidden;
+  /*hidden*/
+  font-family: Helvetica, Arial, sans-serif;
   background-color: #bfbfbf;
-  color:#000000;
+  color: #000000;
 }
 
 @media screen and (max-height: 450px) {
-  .sidenav {padding-top: 15px;}
-  .sidenav a {font-size: 18px;}
+  .sidenav {
+    padding-top: 15px;
+  }
+
+  .sidenav a {
+    font-size: 18px;
+  }
 }
 
 /*Sidebar context menu*/
 .sidebarCxtMenu {
-  z-index: 10;
+  z-index: 100;
   position: absolute;
   text-align: center;
   background: lightgray;

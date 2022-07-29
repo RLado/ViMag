@@ -27,27 +27,31 @@
     </div>
         
     <div id="main" class="main">
-      <div class="video_bg">     
-        <video id="video" width="95%" poster="img/FilmIcon.png">
-          <source src="" type="video/mp4">
-        </video>
+      <div class="video_bg">
+        <video id="video" class="main_video" poster="img/FilmIcon.png" controls></video>
+        <canvas id="video_canvas" class="video_canvas"></canvas>  
       </div>
       <button id="play-pause" onclick="togglePlay()">&#x23EF;</button>
+      <button id="slice_btn" onclick="toggle_slice_mode()">Slice Mode</button>
     </div>
 
     <div id="data_tab" class="data_tab">
       <button id="toggle_data_tab" onclick="toggleDataTab()" height="10px" class="discrete_button">
         <img id="data_tab_arrow" src="img/UpArrow.png" height = "10px"/>
       </button>
+      <p>
+        <button id="process_slices_btn" onclick="process_slices()">Process slices</button>
+      </p>
       
-      <canvas id="Chart1" height="50%"></canvas>
-      <canvas id="Chart2" height="50%"></canvas>
-      <canvas id="Chart3" height="50%"></canvas>
+      <!-- Content -->
+      <div id="data_tab_contents" class="data_tab_contents">
+        <!-- Populated automatically by the renderer -->
+
+      </div>
     </div>
 
 </body>
 
 <script type = "text/javascript" src="js/renderer.js"></script>
 <script type="text/javascript" src="node_modules/chart.js/dist/chart.js"></script>
-<script type = "text/javascript" src="js/charts.js"></script>
 </html>

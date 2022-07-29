@@ -34,14 +34,14 @@ def vid2frames(vid_path, out_path = '.', crop = None): #Frame extractor function
         if success:
             # Saves the frames with frame-count
             if crop == None:
-                cv2.imwrite(os.path.join(out_path,'frame%06d.png' % count), image)
+                cv2.imwrite(os.path.join(out_path,'frame_%06d.png' % count), image)
             else:
-                cv2.imwrite(os.path.join(out_path,'frame%06d.png' % count), image[crop[0][0]:crop[0][0]+crop[1][0],crop[0][1]:crop[0][1]+crop[1][1]])
+                cv2.imwrite(os.path.join(out_path,'frame_%06d.png' % count), image[crop[0][1]:crop[0][1]+crop[1][1],crop[0][0]:crop[0][0]+crop[1][0]])
             count += 1
         else:
             break
     
-    return True, fps, count
+    return True, fps, count-1
 
 if __name__ == '__main__':
      # Argument parser
