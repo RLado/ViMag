@@ -24,7 +24,7 @@ function python_test(args) {
     });
 }
 
-// Get click position inside an element
+// Get click position inside the video element in order to create a slice
 function setPtSlice(e) {
     let video_coords = video.getBoundingClientRect();
     let xPosition = e.clientX - video_coords.left;
@@ -40,6 +40,9 @@ function setPtSlice(e) {
         let target = find_data_by_name(vid_id_disp);
         prj.items[target[0]].items.push(new slice(`slice_${prj.name_num_count}`, [temp_slice_pt_start, temp_slice_pt_stop], false));
         prj.name_num_count++;
+        
+        // Set project.saved to false
+        prj.saved = false;
 
         // Reset
         console.log(`Second slice pt: ${temp_slice_pt_stop}`);
@@ -110,6 +113,11 @@ function toggle_slice_mode() {
 
 // Proceses the slices through the python pipeline
 async function process_slices() {
+    if (!prj.saved && prj.path == null){
+        alert("The project must be saved before processing");
+        ipcRenderer.send('save_as', null);
+        return null;
+    }
     for (let i = 0; i < prj.items.length; i++) { // Level 1
         for (let j = 0; j < prj.items[i].items.length; j++) { // Level 2
             if (prj.items[i].items[j].type == 'slice' && !prj.items[i].items[j].processed) {
@@ -368,7 +376,7 @@ function update_data_tab() {
                                 <input type="checkbox" id="${prj.items[i].items[j].items[k].name}_smth_chkbx">
                                 <label for="${prj.items[i].items[j].items[k].name}_smth_chkbx"> Smooth </label>
                                 <input id="${prj.items[i].items[j].items[k].name}_smth_slider" type="range" min="0" max="1" step="0.01" value="0.02" oninput="${prj.items[i].items[j].items[k].name}_smth_slider_box.value=${prj.items[i].items[j].items[k].name}_smth_slider.value">
-                                <input id="${prj.items[i].items[j].items[k].name}_smth_slider_box" type="number" min="0" max="1" value="0.02" oninput="${prj.items[i].items[j].items[k].name}_smth_slider.value=${prj.items[i].items[j].items[k].name}_smth_slider_box.value">
+                                <input id="${prj.items[i].items[j].items[k].name}_smth_slider_box" type="number" min="0" max="1" step="0.01" value="0.02" oninput="${prj.items[i].items[j].items[k].name}_smth_slider.value=${prj.items[i].items[j].items[k].name}_smth_slider_box.value">
                             </p>
                             <p>
                                 <canvas id="${prj.items[i].items[j].items[k].name}_chart" class="slice_img"></canvas>
@@ -380,8 +388,8 @@ function update_data_tab() {
                                 <input type="radio" name="${prj.items[i].items[j].items[k].name}_scale" value="log" id="${prj.items[i].items[j].items[k].name}_radio_log">
                                 <label for="${prj.items[i].items[j].items[k].name}_radio_log">log</label> -->
                                 Crop: 
-                                <input id="${prj.items[i].items[j].items[k].name}_crop_start_box" type="number" min="0" max="${prj.items[i].framerate / 2}" value="1.5">
-                                <input id="${prj.items[i].items[j].items[k].name}_crop_stop_box" type="number" min="0" max="${prj.items[i].framerate / 2}" value="${prj.items[i].framerate / 2}">
+                                <input id="${prj.items[i].items[j].items[k].name}_crop_start_box" type="number" min="0" max="${prj.items[i].framerate / 2}" value="1.5" step="0.1">
+                                <input id="${prj.items[i].items[j].items[k].name}_crop_stop_box" type="number" min="0" max="${prj.items[i].framerate / 2}" value="${prj.items[i].framerate / 2}" step="0.1">
                             </p>
                         `;
 
@@ -580,6 +588,9 @@ function update_data_tab() {
 
                 // Add new FFT object
                 prj.items[elem[0]].items[elem[1]].items.push(new FFT(`${prj.items[elem[0]].items[elem[1]].name}_FFT`, `${prj.items[elem[0]].items[elem[1]].items[0].csv}_fft.csv`, crop_stop_box = prj.items[elem[0]].framerate / 2));
+
+                // Set project.saved to false
+                prj.saved = false;
             }
 
             let options = {
@@ -844,9 +855,6 @@ function update_accordions() { // Reads project object to populate the accordion
         });
     }
 
-    // Set project.saved to false
-    prj.saved = false;
-
     // Update data_tab
     update_data_tab();
 }
@@ -1009,10 +1017,11 @@ function delete_prj_elem(elem) {
 
 // Classes ---------------------------------------------------------------------
 class prj_dict {
-    constructor(name, saved = false, items = []) {
+    constructor(name, path=null, saved = false, items = []) {
         this.type = 'prj_dict';
         this.name = name;
         this.saved = saved;
+        this.path = path;
         this.items = items;
         this.data = '';
 
@@ -1124,13 +1133,16 @@ ipcRenderer.on('vimport', function (event, args) {
             // Import elements
             prj.items.push(new video_datum(imp_vid_name_temp, args[i]));
             show_vid(imp_vid_name_temp, args[i]);
+
+            // Set project.saved to false
+            prj.saved = false;
         }
     }
     update_accordions();
 });
 
 // Save project
-ipcRenderer.on('save_path', function (event, args) {
+ipcRenderer.on('save_path', function (event, args) { // Save as
     prj.saved = true;
     prj.name = path.basename(args);
 
@@ -1155,6 +1167,31 @@ ipcRenderer.on('save_path', function (event, args) {
             console.log('Saved');
         }
     });
+
+    // Set project.path (to avoid always saving as)
+    prj.path = args;
+});
+
+ipcRenderer.on('save', function (event, args) { // Save
+    if (prj.path != null){
+        prj.saved = true;
+
+        // Serialize project object
+        let prj_dict_str = JSON.stringify(prj);
+
+        // Write to file
+        fs.writeFile(prj.path, prj_dict_str, 'utf8', function (err) {
+            if (err) {
+                return console.log(err);
+            } else {
+                console.log('Saved');
+            }
+        });
+    }
+    else{
+        // Use the Save As dialog
+        ipcRenderer.send('save_as', null);
+    }
 });
 
 // Load project

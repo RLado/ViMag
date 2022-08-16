@@ -36,8 +36,15 @@ const createWindow = () => {
                     }
                 },
                 {
-                    label: 'Save project',
+                    label: 'Save',
                     accelerator: 'CmdOrCtrl+S',
+                    click() {
+                        win.webContents.send('save', null);
+                    }
+                },
+                {
+                    label: 'Save As',
+                    accelerator: 'CmdOrCtrl+Shift+S',
                     click() {
                         save_project(win);
                     }
@@ -85,6 +92,12 @@ const createWindow = () => {
 
     const menu = Menu.buildFromTemplate(menu_template)
     Menu.setApplicationMenu(menu)
+
+    // Renderer events ---------------------------------------------------------
+    // The renderer asks for a "Save As" dialog
+    ipcMain.on('save_as', function (event, args) {
+        save_project(win)
+    });
 };
 
 app.whenReady().then(() => {
@@ -97,54 +110,6 @@ app.on('window-all-closed', () => {
 });
 
 // Functions -------------------------------------------------------------------
-async function import_vid(MainWindow) {
-    const { dialog } = require('electron');
-    let options = {
-        title: "Import video",
-        defaultPath: ".",
-        buttonLabel: "Import",
-
-        filters: [
-            { name: 'Movies', extensions: ['mkv', 'avi', 'mp4'] },
-            { name: 'All Files', extensions: ['*'] }
-        ],
-        properties: ['openFile', 'multiSelections']
-    };
-
-    dialog.showOpenDialog(MainWindow, options).then((filePaths) => {
-        console.log('Import dialog')
-        console.log({ filePaths })
-
-        if (!filePaths.canceled) {
-            MainWindow.webContents.send('vimport', filePaths.filePaths);
-        }
-    });
-}
-
-async function save_project(MainWindow) {
-    const { dialog } = require('electron');
-    let options = {
-        title: "Save project",
-        defaultPath: ".",
-        buttonLabel: "Save",
-
-        filters: [
-            { name: 'VibroLab projects', extensions: ['vl'] },
-            { name: 'All Files', extensions: ['*'] }
-        ],
-        properties: ['saveFile']
-    };
-
-    dialog.showSaveDialog(MainWindow, options).then((filePaths) => {
-        console.log('Save dialog:')
-        console.log({ filePaths })
-
-        if (!filePaths.canceled) {
-            MainWindow.webContents.send('save_path', filePaths.filePath);
-        }
-    });
-}
-
 async function load_project(MainWindow) {
     const { dialog } = require('electron');
     let options = {
@@ -165,6 +130,54 @@ async function load_project(MainWindow) {
 
         if (!filePaths.canceled) {
             MainWindow.webContents.send('load_path', filePaths.filePaths[0]);
+        }
+    });
+}
+
+async function save_project(MainWindow) {
+    const { dialog } = require('electron');
+    let options = {
+        title: "Save project",
+        defaultPath: ".",
+        buttonLabel: "Save As",
+
+        filters: [
+            { name: 'VibroLab projects', extensions: ['vl'] },
+            { name: 'All Files', extensions: ['*'] }
+        ],
+        properties: ['saveFile']
+    };
+
+    dialog.showSaveDialog(MainWindow, options).then((filePaths) => {
+        console.log('Save dialog:')
+        console.log({ filePaths })
+
+        if (!filePaths.canceled) {
+            MainWindow.webContents.send('save_path', filePaths.filePath);
+        }
+    });
+}
+
+async function import_vid(MainWindow) {
+    const { dialog } = require('electron');
+    let options = {
+        title: "Import video",
+        defaultPath: ".",
+        buttonLabel: "Import",
+
+        filters: [
+            { name: 'Movies', extensions: ['mkv', 'avi', 'mp4'] },
+            { name: 'All Files', extensions: ['*'] }
+        ],
+        properties: ['openFile', 'multiSelections']
+    };
+
+    dialog.showOpenDialog(MainWindow, options).then((filePaths) => {
+        console.log('Import dialog')
+        console.log({ filePaths })
+
+        if (!filePaths.canceled) {
+            MainWindow.webContents.send('vimport', filePaths.filePaths);
         }
     });
 }
