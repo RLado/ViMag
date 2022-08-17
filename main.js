@@ -96,8 +96,19 @@ const createWindow = () => {
     // Renderer events ---------------------------------------------------------
     // The renderer asks for a "Save As" dialog
     ipcMain.on('save_as', function (event, args) {
-        save_project(win)
+        save_project(win);
     });
+
+    // Request for video import
+    ipcMain.on('vimport_req', function (event, args) {
+        import_vid(win);
+    });
+
+    // Request for project load
+    ipcMain.on('load_req', function (event, args) {
+        load_project(win);
+    });
+    
 };
 
 app.whenReady().then(() => {

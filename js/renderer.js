@@ -118,6 +118,11 @@ async function process_slices() {
         ipcRenderer.send('save_as', null);
         return null;
     }
+    // Spin the icon to indicate it's working and disable functonality
+    document.getElementById("process_slices_btn").innerHTML = '<i class="fa fa-sm fa-cog fa-spin"></i>';
+    document.getElementById("process_slices_btn").onclick = null;
+
+    // Do the processing
     for (let i = 0; i < prj.items.length; i++) { // Level 1
         for (let j = 0; j < prj.items[i].items.length; j++) { // Level 2
             if (prj.items[i].items[j].type == 'slice' && !prj.items[i].items[j].processed) {
@@ -205,85 +210,92 @@ async function process_slices() {
 
                 //console.log({ options });
 
-                PythonShell.run('python/video2frames.py', options, function (err_v2f, results_v2f) {
-                    if (err_v2f) throw err_v2f; // Error callback
-
-                    // Results callback
-                    console.log('Video crop results: %j', results_v2f);
-                    prj.items[i].framerate = results_v2f[0].split(',')[1];
-                    let nframes = results_v2f[0].split(',')[2];
-                    nframes = nframes.slice(0, nframes.length - 1) - 1;
-
-                    // Magnify the cut video results
-                    options = {
-                        args: [
-                            '--load_ckpt', './python/STB-VMM/ckpt/ckpt_e49.pth.tar',
-                            '--save_dir', prj.items[i].items[j].path_vmm,
-                            '--video_path', prj.items[i].items[j].path_original + '/frame',
-                            '--num_data', nframes,
-                            '--mode', 'static',
-                            '-j', 1,
-                            '-b', 1,
-                            '-m', 20,
-                        ],
-                    };
-
-                    //console.log({ options });
-
-                    PythonShell.run('python/STB-VMM/run.py', options, function (err_STB, results_STB) {
-                        if (err_STB) throw err_STB; // Error callback
+                await new Promise((resolve, reject) => {
+                    PythonShell.run('python/video2frames.py', options, function (err_v2f, results_v2f) {
+                        if (err_v2f) throw err_v2f; // Error callback
 
                         // Results callback
-                        console.log({ results_STB });
+                        console.log('Video crop results: %j', results_v2f);
+                        prj.items[i].framerate = results_v2f[0].split(',')[1];
+                        let nframes = results_v2f[0].split(',')[2];
+                        nframes = nframes.slice(0, nframes.length - 1) - 1;
 
-                        // Run slicing
-                        // --Correct global coordinates to magnified window
-                        let slice_start_coord = [
-                            Math.round(prj.items[i].items[j].true_coord[0][0] - prj.items[i].items[j].win_coord[0]),
-                            Math.round(prj.items[i].items[j].true_coord[0][1] - prj.items[i].items[j].win_coord[1]),
-                        ];
-                        let slice_end_coord = [
-                            Math.round(prj.items[i].items[j].true_coord[1][0] - prj.items[i].items[j].win_coord[0]),
-                            Math.round(prj.items[i].items[j].true_coord[1][1] - prj.items[i].items[j].win_coord[1]),
-                        ];
-
-                        // --Run python slicer
-                        let slice_files = fs.readdirSync(prj.items[i].items[j].path_vmm);
-                        for (let l = 0; l < slice_files.length; l++) {
-                            slice_files[l] = prj.items[i].items[j].path_vmm + '/' + slice_files[l];
-                        }
-                        console.log({ slice_files });
-
+                        // Magnify the cut video results
                         options = {
                             args: [
-                                '-s', slice_start_coord[0], slice_start_coord[1],
-                                '-e', slice_end_coord[0], slice_end_coord[1],
-                                '-o', prj.items[i].items[j].path_slice,
-                                '-i',
-                            ].concat(slice_files),
+                                '--load_ckpt', './python/STB-VMM/ckpt/ckpt_e49.pth.tar',
+                                '--save_dir', prj.items[i].items[j].path_vmm,
+                                '--video_path', prj.items[i].items[j].path_original + '/frame',
+                                '--num_data', nframes,
+                                '--mode', 'static',
+                                '-j', 1,
+                                '-b', 1,
+                                '-m', 20,
+                            ],
                         };
 
-                        PythonShell.run('python/TempSlice/tempslice.py', options, function (err_slice, results_slice) {
-                            if (err_slice) throw err_slice; // Error callback
+                        //console.log({ options });
+
+                        PythonShell.run('python/STB-VMM/run.py', options, function (err_STB, results_STB) {
+                            if (err_STB) throw err_STB; // Error callback
 
                             // Results callback
-                            console.log(`Slice for ${prj.items[i].items[j].name} completed`);
+                            console.log({ results_STB });
 
-                            // Flag as processed
-                            prj.items[i].items[j].processed = true;
+                            // Run slicing
+                            // --Correct global coordinates to magnified window
+                            let slice_start_coord = [
+                                Math.round(prj.items[i].items[j].true_coord[0][0] - prj.items[i].items[j].win_coord[0]),
+                                Math.round(prj.items[i].items[j].true_coord[0][1] - prj.items[i].items[j].win_coord[1]),
+                            ];
+                            let slice_end_coord = [
+                                Math.round(prj.items[i].items[j].true_coord[1][0] - prj.items[i].items[j].win_coord[0]),
+                                Math.round(prj.items[i].items[j].true_coord[1][1] - prj.items[i].items[j].win_coord[1]),
+                            ];
 
-                            // Update data_tab
-                            update_data_tab();
+                            // --Run python slicer
+                            let slice_files = fs.readdirSync(prj.items[i].items[j].path_vmm);
+                            for (let l = 0; l < slice_files.length; l++) {
+                                slice_files[l] = prj.items[i].items[j].path_vmm + '/' + slice_files[l];
+                            }
+                            console.log({ slice_files });
+
+                            options = {
+                                args: [
+                                    '-s', slice_start_coord[0], slice_start_coord[1],
+                                    '-e', slice_end_coord[0], slice_end_coord[1],
+                                    '-o', prj.items[i].items[j].path_slice,
+                                    '-i',
+                                ].concat(slice_files),
+                            };
+
+                            PythonShell.run('python/TempSlice/tempslice.py', options, function (err_slice, results_slice) {
+                                if (err_slice) throw err_slice; // Error callback
+
+                                // Results callback
+                                console.log(`Slice for ${prj.items[i].items[j].name} completed`);
+
+                                // Flag as processed
+                                prj.items[i].items[j].processed = true;
+
+                                // Update data_tab
+                                update_data_tab();
+
+                                // Resolve promise
+                                resolve({ success: true });
+                            });
 
                         });
 
                     });
-
                 });
 
             }
-        }
+        }    
     }
+    // Stop the spinning icon and restore functionality
+    document.getElementById("process_slices_btn").innerHTML = '<i class="fa fa-sm fa-cog"></i>';
+    document.getElementById("process_slices_btn").onclick = function() { process_slices(); };
 }
 
 // Populate data tab
@@ -362,7 +374,7 @@ function update_data_tab() {
 
                     if (prj.items[i].items[j].items[k].type == 'FFT') { // FFTs
                         data_tab_contents.innerHTML += `
-                            <p>FFT: <button id="${prj.items[i].items[j].items[k].name}_compute_btn"> Compute </button></p>
+                            <p>FFT: <button id="${prj.items[i].items[j].items[k].name}_compute_btn" class="generic_button"> Compute </button></p>
                             <p>
                                 Data: 
                                 <input type="radio" name="${prj.items[i].items[j].items[k].name}_data_col" value="avg" id="${prj.items[i].items[j].items[k].name}_radio_avg">
@@ -772,15 +784,15 @@ function toggleDataTab() {
 }
 
 function openDataTab() {
-    document.getElementById("data_tab_arrow").src = "img/DownArrow.png";
+    document.getElementById("toggle_data_tab").innerHTML = '<i class="fa-solid fa-caret-down"></i>';
     document.getElementById("data_tab").style.overflow = "auto";
-    document.getElementById("data_tab").style.height = "95%";
+    document.getElementById("data_tab").style.height = "calc(100% - 15px)";
 }
 
 function closeDataTab() {
-    document.getElementById("data_tab_arrow").src = "img/UpArrow.png";
+    document.getElementById("toggle_data_tab").innerHTML = '<i class="fa-solid fa-caret-up"></i>';
     document.getElementById("data_tab").style.overflow = "hidden";
-    document.getElementById("data_tab").style.height = "20px";
+    document.getElementById("data_tab").style.height = "15px";
 }
 
 // Video player
@@ -1118,6 +1130,11 @@ ipcRenderer.on('new_prj', function (event, args) {
     }
     update_accordions();
     show_vid('', ''); // Deactivate video player to force reselection
+    toggle_slice_mode();
+
+    // Stop the spinning icon and restore functionality (if it was)
+    document.getElementById("process_slices_btn").innerHTML = '<i class="fa fa-sm fa-cog"></i>';
+    document.getElementById("process_slices_btn").onclick = function() { process_slices(); };
 });
 
 // Video import
@@ -1141,10 +1158,15 @@ ipcRenderer.on('vimport', function (event, args) {
     update_accordions();
 });
 
+function vimport_req(){ // Request video import from button
+    ipcRenderer.send('vimport_req', null);
+}
+
 // Save project
 ipcRenderer.on('save_path', function (event, args) { // Save as
     prj.saved = true;
     prj.name = path.basename(args);
+    prj.path = args; // Set project.path (to avoid always saving as)
 
     console.log({ prj });
 
@@ -1167,12 +1189,9 @@ ipcRenderer.on('save_path', function (event, args) { // Save as
             console.log('Saved');
         }
     });
-
-    // Set project.path (to avoid always saving as)
-    prj.path = args;
 });
 
-ipcRenderer.on('save', function (event, args) { // Save
+function save(){
     if (prj.path != null){
         prj.saved = true;
 
@@ -1192,14 +1211,30 @@ ipcRenderer.on('save', function (event, args) { // Save
         // Use the Save As dialog
         ipcRenderer.send('save_as', null);
     }
+}
+
+ipcRenderer.on('save', function (event, args) { // Save
+    save()
 });
 
 // Load project
-ipcRenderer.on('load_path', function (event, args) {
+function load(args){
     let prj_dict_str = fs.readFileSync(args, 'utf-8').toString();
     prj = JSON.parse(prj_dict_str);
     console.log({ prj });
     update_accordions();
+
+    // Stop the spinning icon and restore functionality (if it was)
+    document.getElementById("process_slices_btn").innerHTML = '<i class="fa fa-sm fa-cog"></i>';
+    document.getElementById("process_slices_btn").onclick = function() { process_slices(); };
+}
+
+function load_req(){
+    ipcRenderer.send('load_req', null);
+}
+
+ipcRenderer.on('load_path', function (event, args) {
+    load(args);
 });
 
 

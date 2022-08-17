@@ -3,6 +3,7 @@
 
 <head>
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/font_awsome_all.css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' localhost:* ws://localhost:*;">
 </head>
@@ -10,7 +11,12 @@
 <body>
 
     <div id="Iconbar" class="iconbar">        
-      <a class="ibactive" href="#" onclick="toggleNav()">&#9776;</a>
+      <a class="ib_menu" onclick="toggleNav()"><i class="fa fa-sm fa-bars"></i></a>
+      <a class="ib_bt" onclick="load_req()"><i class="fa fa-sm fa-folder-open"></i></a>
+      <a class="ib_bt" onclick="save()"><i class="fa fa-sm fa-floppy-disk"></i></a>
+      <a class="ib_bt" onclick="vimport_req()"><i class="fa fa-sm fa-file-import"></i></a>
+      <a id="process_slices_btn" class="ib_bt" onclick="process_slices()"><i class="fa fa-sm fa-cog"></i></a>
+      
     </div> 
 
     <div id="Sidebar" class="sidenav">
@@ -31,17 +37,20 @@
         <video id="video" class="main_video" poster="img/FilmIcon.png" controls></video>
         <canvas id="video_canvas" class="video_canvas"></canvas>  
       </div>
-      <button id="play-pause" onclick="togglePlay()">&#x23EF;</button>
-      <button id="slice_btn" onclick="toggle_slice_mode()">Slice Mode</button>
+      <p>
+        <button id="play-pause" class="generic_button" onclick="togglePlay()"><i class="fa fa-circle-play"></i></button>
+        <button id="slice_btn" class="generic_button" onclick="toggle_slice_mode()">Slice Mode</button>
+      </p>
+
     </div>
 
     <div id="data_tab" class="data_tab">
       <button id="toggle_data_tab" onclick="toggleDataTab()" height="10px" class="discrete_button">
-        <img id="data_tab_arrow" src="img/UpArrow.png" height = "10px"/>
+        <i class="fa-solid fa-caret-up"></i>
       </button>
-      <p>
+      <!-- <p>
         <button id="process_slices_btn" onclick="process_slices()">Process slices</button>
-      </p>
+      </p> -->
       
       <!-- Content -->
       <div id="data_tab_contents" class="data_tab_contents">
