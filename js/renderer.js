@@ -40,7 +40,7 @@ function setPtSlice(e) {
         let target = find_data_by_name(vid_id_disp);
         prj.items[target[0]].items.push(new slice(`slice_${prj.name_num_count}`, [temp_slice_pt_start, temp_slice_pt_stop], false));
         prj.name_num_count++;
-        
+
         // Set project.saved to false
         prj.saved = false;
 
@@ -113,7 +113,7 @@ function toggle_slice_mode() {
 
 // Proceses the slices through the python pipeline
 async function process_slices() {
-    if (!prj.saved && prj.path == null){
+    if (!prj.saved && prj.path == null) {
         alert("The project must be saved before processing");
         ipcRenderer.send('save_as', null);
         return null;
@@ -240,7 +240,7 @@ async function process_slices() {
                             if (err_STB) throw err_STB; // Error callback
 
                             // Results callback
-                            console.log({ results_STB });
+                            //console.log({ results_STB });
 
                             // Run slicing
                             // --Correct global coordinates to magnified window
@@ -258,7 +258,7 @@ async function process_slices() {
                             for (let l = 0; l < slice_files.length; l++) {
                                 slice_files[l] = prj.items[i].items[j].path_vmm + '/' + slice_files[l];
                             }
-                            console.log({ slice_files });
+                            //console.log({ slice_files });
 
                             options = {
                                 args: [
@@ -291,11 +291,11 @@ async function process_slices() {
                 });
 
             }
-        }    
+        }
     }
     // Stop the spinning icon and restore functionality
     document.getElementById("process_slices_btn").innerHTML = '<i class="fa fa-sm fa-cog"></i>';
-    document.getElementById("process_slices_btn").onclick = function() { process_slices(); };
+    document.getElementById("process_slices_btn").onclick = function () { process_slices(); };
 }
 
 // Populate data tab
@@ -574,13 +574,13 @@ function update_data_tab() {
             // Correct coordinates
             const original_img_size = sizeOfimg(`${prj.items[elem[0]].items[elem[1]].path_slice}_slice.png`); // Read img res
 
-            prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up = [
-                Math.round(prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up[0] * original_img_size.width),
-                Math.round(prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up[0] * original_img_size.height),
+            prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up = [ // Use floor() instead of round() to avoid out of range
+                Math.floor(prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up[0] * original_img_size.width),
+                Math.floor(prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up[0] * original_img_size.height),
             ];
             prj.items[elem[0]].items[elem[1]].pt_color_thrhd_low = [
-                Math.round(prj.items[elem[0]].items[elem[1]].pt_color_thrhd_low[0] * original_img_size.width),
-                Math.round(prj.items[elem[0]].items[elem[1]].pt_color_thrhd_low[1] * original_img_size.height),
+                Math.floor(prj.items[elem[0]].items[elem[1]].pt_color_thrhd_low[0] * original_img_size.width),
+                Math.floor(prj.items[elem[0]].items[elem[1]].pt_color_thrhd_low[1] * original_img_size.height),
             ];
 
             // Run slice2csv
@@ -594,10 +594,25 @@ function update_data_tab() {
             }
 
             // Initialize new signal & fft object (if needed)
-            if (prj.items[elem[0]].items[elem[1]].items.length == 0) {
+            // Check if new signals or FFTs are needed
+            let has_signal = false;
+            let has_fft = false;
+            for (let i = 0; i < prj.items[elem[0]].items[elem[1]].items.length; i++) {
+                if (prj.items[elem[0]].items[elem[1]].items[i].type == 'signal') {
+                    has_signal = true;
+                }
+                if (prj.items[elem[0]].items[elem[1]].items[i].type == 'FFT') {
+                    has_fft = true;
+                }
+            }
+            if (!has_signal) {
                 // Add new signal object
                 prj.items[elem[0]].items[elem[1]].items.push(new signal(`${prj.items[elem[0]].items[elem[1]].name}_signal`, `${bw_img}.csv`));
 
+                // Set project.saved to false
+                prj.saved = false;
+            }
+            if (!has_fft) {
                 // Add new FFT object
                 prj.items[elem[0]].items[elem[1]].items.push(new FFT(`${prj.items[elem[0]].items[elem[1]].name}_FFT`, `${prj.items[elem[0]].items[elem[1]].items[0].csv}_fft.csv`, crop_stop_box = prj.items[elem[0]].framerate / 2));
 
@@ -618,7 +633,14 @@ function update_data_tab() {
             //console.log({ options });
 
             PythonShell.run('python/TempSlice/slice2csv.py', options, function (err_s2csv, results_s2csv) {
-                if (err_s2csv) throw err_s2csv; // Error callback
+                if (err_s2csv) {
+                    // Reset
+                    prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up = [-1, -1];
+                    prj.items[elem[0]].items[elem[1]].pt_color_thrhd_low = [-1, -1];
+
+                    // Error throw callback
+                    throw err_s2csv;
+                }
 
                 // Results callback
                 console.log(`slice2csv for ${prj.items[elem[0]].items[elem[1]].name} completed`);
@@ -679,11 +701,25 @@ function update_data_tab() {
             document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_crop_stop_box`).value = prj.items[elem[0]].framerate / 2;
         }
 
+        // Search for signal component in the item array (generally 0)
+        let signal_index = null;
+        for (let i = 0; i < prj.items[elem[0]].items[elem[1]].items.length; i++) {
+            if (prj.items[elem[0]].items[elem[1]].items[i].type == 'signal') {
+                signal_index = i;
+                break;
+            }
+        }
+        if (signal_index === null) {
+            //console.log("No signal found in slice. Could not calculate FFT.");
+            alert('No signal found. Could not calculate FFT.');
+            return null;
+        }
+
         if (document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_radio_avg`).checked) {
             options = {
                 args: [
                     '-f', `${prj.items[elem[0]].framerate}`,
-                    '-i', `${prj.items[elem[0]].items[elem[1]].items[0].csv}`,
+                    '-i', `${prj.items[elem[0]].items[elem[1]].items[signal_index].csv}`,
                     '-o', `${prj.items[elem[0]].items[elem[1]].items[elem[2]].csv}_graph.png`,
                     '-od', `${prj.data}`,
                     '-c', document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_crop_start_box`).value, document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_crop_stop_box`).value,
@@ -695,7 +731,7 @@ function update_data_tab() {
             options = {
                 args: [
                     '-f', `${prj.items[elem[0]].framerate}`,
-                    '-i', `${prj.items[elem[0]].items[elem[1]].items[0].csv}`,
+                    '-i', `${prj.items[elem[0]].items[elem[1]].items[signal_index].csv}`,
                     '-o', `${prj.items[elem[0]].items[elem[1]].items[elem[2]].csv}_graph.png`,
                     '-od', `${prj.data}`,
                     '-c', document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_crop_start_box`).value, document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_crop_stop_box`).value,
@@ -707,7 +743,7 @@ function update_data_tab() {
             options = {
                 args: [
                     '-f', `${prj.items[elem[0]].framerate}`,
-                    '-i', `${prj.items[elem[0]].items[elem[1]].items[0].csv}`,
+                    '-i', `${prj.items[elem[0]].items[elem[1]].items[signal_index].csv}`,
                     '-o', `${prj.items[elem[0]].items[elem[1]].items[elem[2]].csv}_graph.png`,
                     '-od', `${prj.data}`,
                     '-c', document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_crop_start_box`).value, document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_crop_stop_box`).value,
@@ -815,9 +851,18 @@ function show_vid(name, path) {
 }
 
 function update_accordions() { // Reads project object to populate the accordions
-    // Should use string substitution instead
+    // Save accordion states (To later unfold)
+    let acc = document.getElementsByClassName("accordion");
+    let unfolded_acc = [];
 
-    var target = document.getElementById("Sidebar");
+    for (let i = 0; i < acc.length; i++) {
+        if (acc[i].classList.contains("active")) {
+            unfolded_acc.push(acc[i].id);
+        }
+    }
+
+    // Update
+    let target = document.getElementById("Sidebar");
     //target.innerHTML = ''; // Empty out the code
     let buffer = '';
 
@@ -850,21 +895,32 @@ function update_accordions() { // Reads project object to populate the accordion
     target.innerHTML = buffer;
 
     // Add accordions click events
-    let acc = document.getElementsByClassName("accordion");
+    acc = document.getElementsByClassName("accordion");
 
-    for (let i = 0; i < acc.length; i++) {
-        acc[i].addEventListener("click", function () {
-            // Toggle between adding and removing the "active" class, to highlight the button that controls the panel
-            this.classList.toggle("active");
+    function toggle_acc_item(acc_item) {
+        // Toggle between adding and removing the "active" class, to highlight the button that controls the panel
+        acc_item.classList.toggle("active");
 
-            // Toggle between hiding and showing the active panel
-            var panel = this.nextElementSibling;
+        // Toggle between hiding and showing the active panel
+        let panel = acc_item.nextElementSibling;
+        if (panel != null) { // panel will be null at the end of the hierarchy
             if (panel.style.display === "block") {
                 panel.style.display = "none";
             } else {
                 panel.style.display = "block";
             }
+        }
+    }
+
+    for (let i = 0; i < acc.length; i++) {
+        acc[i].addEventListener("click", function () {
+            toggle_acc_item(this);
         });
+
+        // Restore unfolded accordions
+        if (unfolded_acc.includes(acc[i].id)) {
+            toggle_acc_item(acc[i]);
+        }
     }
 
     // Update data_tab
@@ -1029,7 +1085,7 @@ function delete_prj_elem(elem) {
 
 // Classes ---------------------------------------------------------------------
 class prj_dict {
-    constructor(name, path=null, saved = false, items = []) {
+    constructor(name, path = null, saved = false, items = []) {
         this.type = 'prj_dict';
         this.name = name;
         this.saved = saved;
@@ -1134,7 +1190,7 @@ ipcRenderer.on('new_prj', function (event, args) {
 
     // Stop the spinning icon and restore functionality (if it was)
     document.getElementById("process_slices_btn").innerHTML = '<i class="fa fa-sm fa-cog"></i>';
-    document.getElementById("process_slices_btn").onclick = function() { process_slices(); };
+    document.getElementById("process_slices_btn").onclick = function () { process_slices(); };
 });
 
 // Video import
@@ -1158,7 +1214,7 @@ ipcRenderer.on('vimport', function (event, args) {
     update_accordions();
 });
 
-function vimport_req(){ // Request video import from button
+function vimport_req() { // Request video import from button
     ipcRenderer.send('vimport_req', null);
 }
 
@@ -1191,8 +1247,8 @@ ipcRenderer.on('save_path', function (event, args) { // Save as
     });
 });
 
-function save(){
-    if (prj.path != null){
+function save() {
+    if (prj.path != null) {
         prj.saved = true;
 
         // Serialize project object
@@ -1207,7 +1263,7 @@ function save(){
             }
         });
     }
-    else{
+    else {
         // Use the Save As dialog
         ipcRenderer.send('save_as', null);
     }
@@ -1218,18 +1274,22 @@ ipcRenderer.on('save', function (event, args) { // Save
 });
 
 // Load project
-function load(args){
+function load(args) {
     let prj_dict_str = fs.readFileSync(args, 'utf-8').toString();
     prj = JSON.parse(prj_dict_str);
     console.log({ prj });
     update_accordions();
 
+    // Clean UI
+    show_vid('', ''); // Deactivate video player to force reselection
+    toggle_slice_mode();
+
     // Stop the spinning icon and restore functionality (if it was)
     document.getElementById("process_slices_btn").innerHTML = '<i class="fa fa-sm fa-cog"></i>';
-    document.getElementById("process_slices_btn").onclick = function() { process_slices(); };
+    document.getElementById("process_slices_btn").onclick = function () { process_slices(); };
 }
 
-function load_req(){
+function load_req() {
     ipcRenderer.send('load_req', null);
 }
 

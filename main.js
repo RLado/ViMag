@@ -6,8 +6,10 @@ let { PythonShell } = require('python-shell');
 // Define main window
 const createWindow = () => {
     const win = new BrowserWindow({
+        title: 'VibroLab',
         width: 1200,
         height: 720,
+        fullscreenable: false,
         //frame: False,
         webPreferences: {
             nodeIntegration: true, // These arguments are now required since they are disabled by default for security reasons
@@ -15,7 +17,7 @@ const createWindow = () => {
         },
     });
     win.toggleDevTools(); //For debug
-    win.loadFile('index.html');
+    win.loadFile('./html/index.html');
 
     const menu_template = [
         {
@@ -84,7 +86,18 @@ const createWindow = () => {
             role: 'help',
             submenu: [
                 {
-                    label: 'About'
+                    label: 'About',
+                    click() {
+                        const about_win = new BrowserWindow({
+                            title: 'About',
+                            width: 340,
+                            height: 215,
+                            resizable: false,
+                            fullscreenable: false,
+                        });
+                        about_win.removeMenu();
+                        about_win.loadFile('./html/about.html');
+                    },
                 }
             ]
         },
@@ -108,7 +121,7 @@ const createWindow = () => {
     ipcMain.on('load_req', function (event, args) {
         load_project(win);
     });
-    
+
 };
 
 app.whenReady().then(() => {
