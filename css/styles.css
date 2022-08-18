@@ -90,8 +90,9 @@ body {
   z-index: 100;
   position: absolute;
   text-align: center;
-  background: #d3d3d3;
-  border: 1px solid #000000;
+  background: #474747;
+  border: 1px solid #505050;
+  font-size: 12px;
 }
 
 .sidebarCxtMenu ul {
@@ -104,12 +105,11 @@ body {
 .sidebarCxtMenu ul li {
   padding-bottom: 7px;
   padding-top: 7px;
-  border: 1px solid #000000;
 }
 
 .sidebarCxtMenu ul li a {
   text-decoration: none;
-  color: #000000;
+  color: #d2d2d2;
 }
 
 .sidebarCxtMenu ul li:hover {

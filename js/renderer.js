@@ -1,6 +1,6 @@
 // Import ----------------------------------------------------------------------
 const { ipcRenderer } = require('electron');
-let Dialogs = require('dialogs'); // Don't like it
+let Dialogs = require('dialogs');
 const dialogs = Dialogs();
 
 const path = require('path');
@@ -1056,6 +1056,9 @@ function rename_prj_elem(elem) {
         })
         //prj.items[target[0]].items[target[1]].items[target[2]].name = prompt("Rename:", prj.items[target[0]].items[target[1]].items[target[2]].name);
     }
+
+    // Set project.saved to false
+    prj.saved = false;
 }
 
 function delete_prj_elem(elem) {
@@ -1080,6 +1083,9 @@ function delete_prj_elem(elem) {
     // Update interface
     update_accordions();
     draw_slices();
+
+    // Set project.saved to false
+    prj.saved = false;    
 }
 
 

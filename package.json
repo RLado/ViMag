@@ -1,6 +1,6 @@
 {
-  "name": "vibrolab",
-  "version": "0.0.1",
+  "name": "VibroLab",
+  "version": "0.1.0",
   "description": "A video vibration toolbox",
   "main": "main.js",
   "scripts": {
@@ -35,7 +35,7 @@
   "dependencies": {
     "chart.js": "^3.8.0",
     "csvtojson": "^2.0.10",
-    "dialogs": "^2.0.1",
+    "dialogs": "git://github.com/RLado/dialogs_js.git",
     "electron-squirrel-startup": "^1.0.0",
     "get-video-dimensions": "^1.0.0",
     "image-size": "^1.0.2",
