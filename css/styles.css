@@ -88,7 +88,7 @@ body {
 /*Sidebar context menu*/
 .sidebarCxtMenu {
   z-index: 100;
-  position: absolute;
+  position: fixed;
   text-align: center;
   background: #474747;
   border: 1px solid #505050;
