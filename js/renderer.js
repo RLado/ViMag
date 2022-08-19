@@ -911,6 +911,7 @@ function toggleNav() {
 
     // Update UI
     draw_slices();
+    setTimeout(() => draw_slices(), 500); // wait for resize transition to redraw
 }
 
 function openNav() {
