@@ -7,8 +7,6 @@ const path = require('path');
 fs = require('fs');
 
 const { PythonShell } = require('python-shell');
-const getDimensions = require('get-video-dimensions');
-const sizeOfimg = require('image-size');
 const csvtojson = require("csvtojson");
 
 
@@ -22,6 +20,16 @@ function python_test(args) {
         if (err) throw err;
         console.log('results: %j', results);
     });
+}
+
+function getPromiseFromEvent(item, event) {
+    return new Promise((resolve) => {
+        const listener = () => {
+            item.removeEventListener(event, listener);
+            resolve();
+        }
+        item.addEventListener(event, listener);
+    })
 }
 
 // Get click position inside the video element in order to create a slice
@@ -107,10 +115,10 @@ function toggle_slice_mode() {
             vcnvas.removeEventListener('click', setPtSlice);
         }
     }
-    else{
-        slice_state =false;
+    else {
+        slice_state = false;
         video.controls = !slice_state; // If not slicing show controls
-       
+
         // Hide slice mode
         document.getElementById("play-pause").style.visibility = "hidden";
         vcnvas.style.visibility = "hidden";
@@ -139,14 +147,15 @@ async function process_slices() {
                 console.log(prj.items[i].items[j].coord);
 
                 // Correct coords with original resolution
-                let video_res = await getDimensions(prj.items[i].path); //{width: 1920, height:1080};
+                show_vid(prj.items[i].name, prj.items[i].path);
+                await getPromiseFromEvent(video, 'loadedmetadata');
                 prj.items[i].items[j].true_coord = [[
-                    prj.items[i].items[j].coord[0][0] * video_res.width,
-                    prj.items[i].items[j].coord[0][1] * video_res.height,
+                    prj.items[i].items[j].coord[0][0] * video.videoWidth,
+                    prj.items[i].items[j].coord[0][1] * video.videoHeight,
                 ],
                 [
-                    prj.items[i].items[j].coord[1][0] * video_res.width,
-                    prj.items[i].items[j].coord[1][1] * video_res.height,
+                    prj.items[i].items[j].coord[1][0] * video.videoWidth,
+                    prj.items[i].items[j].coord[1][1] * video.videoHeight,
                 ]
                 ];
 
@@ -364,9 +373,9 @@ function update_data_tab() {
                                 // Convert data into the necessary dataset format
                                 let signal_ulbp_plot_data = [];
                                 let signal_lubp_plot_data = [];
-                                for (let n = 0; n < data_time.length; n++){
-                                    signal_ulbp_plot_data.push({x:data_time[n], y:data_ulbp[n]});
-                                    signal_lubp_plot_data.push({x:data_time[n], y:data_lubp[n]});
+                                for (let n = 0; n < data_time.length; n++) {
+                                    signal_ulbp_plot_data.push({ x: data_time[n], y: data_ulbp[n] });
+                                    signal_lubp_plot_data.push({ x: data_time[n], y: data_lubp[n] });
                                 }
 
                                 new Chart(`${prj.items[i].items[j].items[k].name}_chart`, {
@@ -390,13 +399,13 @@ function update_data_tab() {
                                         animation: false,
                                         responsive: true,
                                         maintainAspectRatio: false,
-                                        elements:{
-                                            point:{
+                                        elements: {
+                                            point: {
                                                 radius: 0,
                                             },
                                         },
                                         plugins: {
-                                            legend: { 
+                                            legend: {
                                                 display: true,
                                                 position: 'bottom',
                                             },
@@ -481,8 +490,8 @@ function update_data_tab() {
 
                                 // Convert data into the necessary dataset format
                                 let FFT_plot_data = [];
-                                for (let n = 0; n < data_freq.length; n++){
-                                    FFT_plot_data.push({x:data_freq[n], y:data_mag[n]});
+                                for (let n = 0; n < data_freq.length; n++) {
+                                    FFT_plot_data.push({ x: data_freq[n], y: data_mag[n] });
                                 }
 
                                 new Chart(`${prj.items[i].items[j].items[k].name}_chart`, {
@@ -490,11 +499,11 @@ function update_data_tab() {
                                     data: {
                                         datasets: [
                                             {
-                                            label: 'FFT',
-                                            data: FFT_plot_data,
-                                            showLine: true,
-                                            fill: false,
-                                            borderColor: '#205fac',
+                                                label: 'FFT',
+                                                data: FFT_plot_data,
+                                                showLine: true,
+                                                fill: false,
+                                                borderColor: '#205fac',
                                             },
                                         ]
                                     },
@@ -502,13 +511,13 @@ function update_data_tab() {
                                         animation: false,
                                         responsive: true,
                                         maintainAspectRatio: false,
-                                        elements:{
-                                            point:{
+                                        elements: {
+                                            point: {
                                                 radius: 0,
                                             },
                                         },
                                         plugins: {
-                                            legend: { 
+                                            legend: {
                                                 display: false,
                                                 position: 'bottom',
                                             },
@@ -691,15 +700,13 @@ function update_data_tab() {
             prj.items[elem[0]].items[elem[1]].pt_color_thrhd_low = [xPosition / img_coords.width, yPosition / img_coords.height];
 
             // Correct coordinates
-            const original_img_size = sizeOfimg(`${prj.items[elem[0]].items[elem[1]].path_slice}_slice.png`); // Read img res
-
             prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up = [ // Use floor() instead of round() to avoid out of range
-                Math.floor(prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up[0] * original_img_size.width),
-                Math.floor(prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up[0] * original_img_size.height),
+                Math.floor(prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up[0] * img.naturalWidth),
+                Math.floor(prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up[0] * img.naturalHeight),
             ];
             prj.items[elem[0]].items[elem[1]].pt_color_thrhd_low = [
-                Math.floor(prj.items[elem[0]].items[elem[1]].pt_color_thrhd_low[0] * original_img_size.width),
-                Math.floor(prj.items[elem[0]].items[elem[1]].pt_color_thrhd_low[1] * original_img_size.height),
+                Math.floor(prj.items[elem[0]].items[elem[1]].pt_color_thrhd_low[0] * img.naturalWidth),
+                Math.floor(prj.items[elem[0]].items[elem[1]].pt_color_thrhd_low[1] * img.naturalHeight),
             ];
 
             // Run slice2csv
@@ -1208,7 +1215,7 @@ function delete_prj_elem(elem) {
     draw_slices();
 
     // Set project.saved to false
-    prj.saved = false;    
+    prj.saved = false;
 }
 
 
