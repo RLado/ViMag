@@ -86,11 +86,10 @@ function draw_slices() {
 // Toggle slicing mode
 function toggle_slice_mode() {
     draw_slices(); // Resize video canvas
+    let vcnvas = document.getElementById("video_canvas"); // Get video canvas
 
-    if (vid_id_disp != '' | slice_state) {
-        let vcnvas = document.getElementById("video_canvas"); //get video canvas
+    if (vid_id_disp != '') {
         slice_state = !slice_state; // Change state
-
         video.controls = !slice_state; // If not slicing show controls
 
         if (slice_state) {
@@ -107,6 +106,16 @@ function toggle_slice_mode() {
             window.removeEventListener("resize", draw_slices);
             vcnvas.removeEventListener('click', setPtSlice);
         }
+    }
+    else{
+        slice_state =false;
+        video.controls = !slice_state; // If not slicing show controls
+       
+        // Hide slice mode
+        document.getElementById("play-pause").style.visibility = "hidden";
+        vcnvas.style.visibility = "hidden";
+        window.removeEventListener("resize", draw_slices);
+        vcnvas.removeEventListener('click', setPtSlice);
     }
 }
 
@@ -312,23 +321,24 @@ function update_data_tab() {
 
                 // Add sliders and image
                 data_tab_contents.innerHTML += `
-                    <p>
                     <hr color=#a6a6a6>
                     <h3>${prj.items[i].items[j].name}</h3>
 
-                    <input type="checkbox" id="${prj.items[i].items[j].name}_chkbx">
-                    <label for="${prj.items[i].items[j].name}_chkbx"> B/W threshold </label>
-                    <input id="${prj.items[i].items[j].name}_bw_range_slider" type="range" min="0" max="255" value="128" oninput="${prj.items[i].items[j].name}_bw_range_slider_box.value=${prj.items[i].items[j].name}_bw_range_slider.value">
-                    <input id="${prj.items[i].items[j].name}_bw_range_slider_box" type="number" min="0" max="255" value="128" oninput="${prj.items[i].items[j].name}_bw_range_slider.value=${prj.items[i].items[j].name}_bw_range_slider_box.value">
-                    <br>
+                    <p>
+                        <input type="checkbox" id="${prj.items[i].items[j].name}_chkbx" class="generic_chkbox">
+                        <label for="${prj.items[i].items[j].name}_chkbx"> B/W threshold </label>
+                        <input id="${prj.items[i].items[j].name}_bw_range_slider" class="generic_slider" type="range" min="0" max="255" value="128" oninput="${prj.items[i].items[j].name}_bw_range_slider_box.value=${prj.items[i].items[j].name}_bw_range_slider.value">
+                        <input id="${prj.items[i].items[j].name}_bw_range_slider_box" class="generic_box" type="number" min="0" max="255" value="128" oninput="${prj.items[i].items[j].name}_bw_range_slider.value=${prj.items[i].items[j].name}_bw_range_slider_box.value">
+                    </p>
                     
-                    Color threshold: 
-                    <input id="${prj.items[i].items[j].name}_color_range_slider" type="range" min="0" max="255" value="15" oninput="${prj.items[i].items[j].name}_color_range_slider_box.value=${prj.items[i].items[j].name}_color_range_slider.value">
-                    <input id="${prj.items[i].items[j].name}_color_range_slider_box" type="number" min="0" max="255" value="15" oninput="${prj.items[i].items[j].name}_color_range_slider.value=${prj.items[i].items[j].name}_color_range_slider_box.value">
-                    <br>
+                    <p>
+                        Color threshold: 
+                        <input id="${prj.items[i].items[j].name}_color_range_slider" class="generic_slider" type="range" min="0" max="255" value="15" oninput="${prj.items[i].items[j].name}_color_range_slider_box.value=${prj.items[i].items[j].name}_color_range_slider.value">
+                        <input id="${prj.items[i].items[j].name}_color_range_slider_box" class="generic_box" type="number" min="0" max="255" value="15" oninput="${prj.items[i].items[j].name}_color_range_slider.value=${prj.items[i].items[j].name}_color_range_slider_box.value">
+                    </p>
 
-                    <img id="${prj.items[i].items[j].name}_slice_img" src="${prj.items[i].items[j].path_slice}_slice.png" class="slice_img">
-
+                    <p>
+                        <img id="${prj.items[i].items[j].name}_slice_img" src="${prj.items[i].items[j].path_slice}_slice.png" class="slice_img">
                     </p>
                 `;
 
@@ -338,7 +348,9 @@ function update_data_tab() {
                         // Add canvas
                         data_tab_contents.innerHTML += `
                             <p>Signal:</p>
-                            <canvas id="${prj.items[i].items[j].items[k].name}_chart" class="slice_img"></canvas><br>
+                            <p>
+                                <canvas id="${prj.items[i].items[j].items[k].name}_chart" class="graph_format_legend"></canvas>
+                            </p>
                         `;
 
                         // Populate canvas with chart
@@ -346,28 +358,82 @@ function update_data_tab() {
                             then((data) => {
                                 //console.log(data);
                                 const data_time = data.map((obj) => obj.time);
-                                const data_ulbp = data.map((obj) => obj['upper lower band pixel']);
-                                const data_lubp = data.map((obj) => obj['lower upper band pixel']);
+                                const data_ulbp = data.map((obj) => - obj['upper lower band pixel']);
+                                const data_lubp = data.map((obj) => - obj['lower upper band pixel']);
+
+                                // Convert data into the necessary dataset format
+                                let signal_ulbp_plot_data = [];
+                                let signal_lubp_plot_data = [];
+                                for (let n = 0; n < data_time.length; n++){
+                                    signal_ulbp_plot_data.push({x:data_time[n], y:data_ulbp[n]});
+                                    signal_lubp_plot_data.push({x:data_time[n], y:data_lubp[n]});
+                                }
 
                                 new Chart(`${prj.items[i].items[j].items[k].name}_chart`, {
-                                    type: "line",
+                                    type: "scatter",
                                     data: {
-                                        labels: data_time,
                                         datasets: [{
                                             label: 'upper lower bound',
-                                            data: data_ulbp,
-                                            borderColor: "red",
+                                            data: signal_ulbp_plot_data,
+                                            showLine: true,
+                                            borderColor: '#205fac',
                                             fill: false,
                                         }, {
                                             label: 'lower upper bound',
-                                            data: data_lubp,
-                                            borderColor: "blue",
+                                            data: signal_lubp_plot_data,
+                                            showLine: true,
+                                            borderColor: '#474747',
                                             fill: false,
                                         }]
                                     },
                                     options: {
-                                        legend: { display: false },
-                                    }
+                                        animation: false,
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        elements:{
+                                            point:{
+                                                radius: 0,
+                                            },
+                                        },
+                                        plugins: {
+                                            legend: { 
+                                                display: true,
+                                                position: 'bottom',
+                                            },
+                                        },
+                                        scales: {
+                                            x: {
+                                                title: {
+                                                    display: true,
+                                                    text: 'px',
+                                                    color: '#000000',
+                                                },
+                                                grid: {
+                                                    color: '#00000010',
+                                                    borderColor: '#000000',
+                                                },
+                                                ticks: {
+                                                    color: '#000000',
+                                                    maxTicksLimit: '10',
+                                                },
+                                            },
+                                            y: {
+                                                title: {
+                                                    display: true,
+                                                    text: 'px',
+                                                    color: '#000000',
+                                                },
+                                                grid: {
+                                                    color: '#00000010',
+                                                    borderColor: '#000000',
+                                                },
+                                                ticks: {
+                                                    color: '#000000',
+                                                    maxTicksLimit: '10',
+                                                },
+                                            },
+                                        },
+                                    },
                                 });
                             });
                     }
@@ -377,31 +443,31 @@ function update_data_tab() {
                             <p>FFT: <button id="${prj.items[i].items[j].items[k].name}_compute_btn" class="generic_button"> Compute </button></p>
                             <p>
                                 Data: 
-                                <input type="radio" name="${prj.items[i].items[j].items[k].name}_data_col" value="avg" id="${prj.items[i].items[j].items[k].name}_radio_avg">
+                                <input type="radio" name="${prj.items[i].items[j].items[k].name}_data_col" class="generic_radio" value="avg" id="${prj.items[i].items[j].items[k].name}_radio_avg">
                                 <label for="${prj.items[i].items[j].items[k].name}_radio_avg">avg</label> 
-                                <input type="radio" name="${prj.items[i].items[j].items[k].name}_data_col" value="lub" id="${prj.items[i].items[j].items[k].name}_radio_lub">
+                                <input type="radio" name="${prj.items[i].items[j].items[k].name}_data_col" class="generic_radio" value="lub" id="${prj.items[i].items[j].items[k].name}_radio_lub">
                                 <label for="${prj.items[i].items[j].items[k].name}_radio_lub">lub</label> 
-                                <input type="radio" name="${prj.items[i].items[j].items[k].name}_data_col" value="ulb" id="${prj.items[i].items[j].items[k].name}_radio_ulb" checked>
+                                <input type="radio" name="${prj.items[i].items[j].items[k].name}_data_col" class="generic_radio" value="ulb" id="${prj.items[i].items[j].items[k].name}_radio_ulb" checked>
                                 <label for="${prj.items[i].items[j].items[k].name}_radio_ulb">ulb</label> 
                             </p>
                             <p>
-                                <input type="checkbox" id="${prj.items[i].items[j].items[k].name}_smth_chkbx">
+                                <input type="checkbox" id="${prj.items[i].items[j].items[k].name}_smth_chkbx" class="generic_chkbox">
                                 <label for="${prj.items[i].items[j].items[k].name}_smth_chkbx"> Smooth </label>
-                                <input id="${prj.items[i].items[j].items[k].name}_smth_slider" type="range" min="0" max="1" step="0.01" value="0.02" oninput="${prj.items[i].items[j].items[k].name}_smth_slider_box.value=${prj.items[i].items[j].items[k].name}_smth_slider.value">
-                                <input id="${prj.items[i].items[j].items[k].name}_smth_slider_box" type="number" min="0" max="1" step="0.01" value="0.02" oninput="${prj.items[i].items[j].items[k].name}_smth_slider.value=${prj.items[i].items[j].items[k].name}_smth_slider_box.value">
+                                <input id="${prj.items[i].items[j].items[k].name}_smth_slider" class="generic_slider" type="range" min="0" max="1" step="0.01" value="0.02" oninput="${prj.items[i].items[j].items[k].name}_smth_slider_box.value=${prj.items[i].items[j].items[k].name}_smth_slider.value">
+                                <input id="${prj.items[i].items[j].items[k].name}_smth_slider_box" class="generic_box" type="number" min="0" max="1" step="0.01" value="0.02" oninput="${prj.items[i].items[j].items[k].name}_smth_slider.value=${prj.items[i].items[j].items[k].name}_smth_slider_box.value">
                             </p>
                             <p>
-                                <canvas id="${prj.items[i].items[j].items[k].name}_chart" class="slice_img"></canvas>
+                                <canvas id="${prj.items[i].items[j].items[k].name}_chart" class="graph_format"></canvas>
                             </p>
                             <p>
                                 <!-- y_axis scale: 
-                                <input type="radio" name="${prj.items[i].items[j].items[k].name}_scale" value="mag" id="${prj.items[i].items[j].items[k].name}_radio_mag" checked>
+                                <input type="radio" name="${prj.items[i].items[j].items[k].name}_scale" class="generic_radio" value="mag" id="${prj.items[i].items[j].items[k].name}_radio_mag" checked>
                                 <label for="${prj.items[i].items[j].items[k].name}_radio_mag">mag</label> 
-                                <input type="radio" name="${prj.items[i].items[j].items[k].name}_scale" value="log" id="${prj.items[i].items[j].items[k].name}_radio_log">
+                                <input type="radio" name="${prj.items[i].items[j].items[k].name}_scale" class="generic_radio" value="log" id="${prj.items[i].items[j].items[k].name}_radio_log">
                                 <label for="${prj.items[i].items[j].items[k].name}_radio_log">log</label> -->
                                 Crop: 
-                                <input id="${prj.items[i].items[j].items[k].name}_crop_start_box" type="number" min="0" max="${prj.items[i].framerate / 2}" value="1.5" step="0.1">
-                                <input id="${prj.items[i].items[j].items[k].name}_crop_stop_box" type="number" min="0" max="${prj.items[i].framerate / 2}" value="${prj.items[i].framerate / 2}" step="0.1">
+                                <input id="${prj.items[i].items[j].items[k].name}_crop_start_box" class="generic_box" type="number" min="0" max="${prj.items[i].framerate / 2}" value="1.5" step="0.1">
+                                <input id="${prj.items[i].items[j].items[k].name}_crop_stop_box" class="generic_box" type="number" min="0" max="${prj.items[i].framerate / 2}" value="${prj.items[i].framerate / 2}" step="0.1">
                             </p>
                         `;
 
@@ -413,20 +479,73 @@ function update_data_tab() {
                                 let data_imag = data.map((obj) => obj['imag']);
                                 let data_mag = data.map((obj) => obj['mag']);
 
+                                // Convert data into the necessary dataset format
+                                let FFT_plot_data = [];
+                                for (let n = 0; n < data_freq.length; n++){
+                                    FFT_plot_data.push({x:data_freq[n], y:data_mag[n]});
+                                }
+
                                 new Chart(`${prj.items[i].items[j].items[k].name}_chart`, {
-                                    type: "line",
+                                    type: "scatter",
                                     data: {
-                                        labels: data_freq,
-                                        datasets: [{
-                                            label: 'mag',
-                                            data: data_mag,
-                                            borderColor: "red",
+                                        datasets: [
+                                            {
+                                            label: 'FFT',
+                                            data: FFT_plot_data,
+                                            showLine: true,
                                             fill: false,
-                                        },]
+                                            borderColor: '#205fac',
+                                            },
+                                        ]
                                     },
                                     options: {
-                                        legend: { display: false },
-                                    }
+                                        animation: false,
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        elements:{
+                                            point:{
+                                                radius: 0,
+                                            },
+                                        },
+                                        plugins: {
+                                            legend: { 
+                                                display: false,
+                                                position: 'bottom',
+                                            },
+                                        },
+                                        scales: {
+                                            x: {
+                                                title: {
+                                                    display: true,
+                                                    text: 'Hz',
+                                                    color: '#000000',
+                                                },
+                                                grid: {
+                                                    color: '#00000010',
+                                                    borderColor: '#000000',
+                                                },
+                                                ticks: {
+                                                    color: '#000000',
+                                                    precision: 2,
+                                                },
+                                            },
+                                            y: {
+                                                title: {
+                                                    display: true,
+                                                    text: 'Mag. (px)',
+                                                    color: '#000000',
+                                                },
+                                                grid: {
+                                                    color: '#00000010',
+                                                    borderColor: '#000000',
+                                                },
+                                                ticks: {
+                                                    color: '#000000',
+                                                    precision: 2,
+                                                },
+                                            },
+                                        },
+                                    },
                                 });
                             }).catch(() => {
                                 // Do nothing
@@ -842,10 +961,14 @@ function togglePlay() {
 }
 
 function show_vid(name, path) {
+    // Reset slice mode
+    vid_id_disp = '';
+    toggle_slice_mode(); //draw_slices();
+
+    // Change video
     video.src = path;
     video.poster = '';
     vid_id_disp = name;
-    draw_slices();
 
     console.log('video: ' + path);
 }
@@ -1071,7 +1194,6 @@ function delete_prj_elem(elem) {
         prj.items.splice(target[0], 1);
 
         show_vid('', ''); // Deactivate video player to force reselection
-        toggle_slice_mode(); // Deactivate slice mode
     }
     else if (target[2] == -1) {
         prj.items[target[0]].items.splice(target[1], 1);
@@ -1192,7 +1314,6 @@ ipcRenderer.on('new_prj', function (event, args) {
     }
     update_accordions();
     show_vid('', ''); // Deactivate video player to force reselection
-    toggle_slice_mode();
 
     // Stop the spinning icon and restore functionality (if it was)
     document.getElementById("process_slices_btn").innerHTML = '<i class="fa fa-sm fa-cog"></i>';
@@ -1288,7 +1409,6 @@ function load(args) {
 
     // Clean UI
     show_vid('', ''); // Deactivate video player to force reselection
-    toggle_slice_mode();
 
     // Stop the spinning icon and restore functionality (if it was)
     document.getElementById("process_slices_btn").innerHTML = '<i class="fa fa-sm fa-cog"></i>';
