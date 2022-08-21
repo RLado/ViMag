@@ -4,9 +4,9 @@
   "description": "A video vibration toolbox",
   "main": "main.js",
   "scripts": {
-    "start": "electron-forge start",
-    "package": "electron-forge package",
-    "make": "electron-forge make"
+    "start": "bash -c 'source ./python/interpreter/vibrolab_venv/bin/activate && electron-forge start'",
+    "package": "bash ./build_scripts/linux_x86_64.sh && electron-forge package",
+    "make": "bash ./build_scripts/linux_x86_64.sh && electron-forge make"
   },
   "repository": {
     "type": "git",
@@ -26,10 +26,9 @@
   "homepage": "https://github.com/RLado/Vibrolab#readme",
   "devDependencies": {
     "@electron-forge/cli": "^6.0.0-beta.64",
-    "@electron-forge/maker-deb": "^6.0.0-beta.64",
-    "@electron-forge/maker-rpm": "^6.0.0-beta.64",
     "@electron-forge/maker-squirrel": "^6.0.0-beta.64",
     "@electron-forge/maker-zip": "^6.0.0-beta.64",
+    "@electron-forge/maker-flatpak": "6.0.0-beta.65",
     "electron": "^19.0.8"
   },
   "dependencies": {
@@ -43,24 +42,10 @@
       "packagerConfig": {},
       "makers": [
         {
-          "name": "@electron-forge/maker-squirrel",
+          "name": "@electron-forge/maker-flatpak",
           "config": {
-            "name": "vibrolab"
+            "summary": "A video vibration toolbox"
           }
-        },
-        {
-          "name": "@electron-forge/maker-zip",
-          "platforms": [
-            "darwin"
-          ]
-        },
-        {
-          "name": "@electron-forge/maker-deb",
-          "config": {}
-        },
-        {
-          "name": "@electron-forge/maker-rpm",
-          "config": {}
         }
       ]
     }
