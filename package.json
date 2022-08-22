@@ -4,9 +4,10 @@
   "description": "A video vibration toolbox",
   "main": "main.js",
   "scripts": {
-    "start": "bash -c 'source ./python/interpreter/vibrolab_venv/bin/activate && electron-forge start'",
-    "package": "bash ./build_scripts/linux_x86_64.sh && electron-forge package",
-    "make": "bash ./build_scripts/linux_x86_64.sh && electron-forge make"
+    "dev_setup": "npm install && bash ./build_scripts/linux_x86_64.sh",
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
   },
   "repository": {
     "type": "git",
@@ -26,10 +27,11 @@
   "homepage": "https://github.com/RLado/Vibrolab#readme",
   "devDependencies": {
     "@electron-forge/cli": "^6.0.0-beta.64",
+    "@electron-forge/maker-flatpak": "^6.0.0-beta.65",
     "@electron-forge/maker-squirrel": "^6.0.0-beta.64",
     "@electron-forge/maker-zip": "^6.0.0-beta.64",
-    "@electron-forge/maker-flatpak": "6.0.0-beta.65",
-    "electron": "^19.0.8"
+    "electron": "^19.0.8",
+    "fs-extra": "^10.1.0"
   },
   "dependencies": {
     "chart.js": "^3.8.0",
@@ -38,16 +40,6 @@
     "python-shell": "^3.0.1"
   },
   "config": {
-    "forge": {
-      "packagerConfig": {},
-      "makers": [
-        {
-          "name": "@electron-forge/maker-flatpak",
-          "config": {
-            "summary": "A video vibration toolbox"
-          }
-        }
-      ]
-    }
+    "forge": "./forge.config.js"
   }
 }

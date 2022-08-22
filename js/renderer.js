@@ -14,6 +14,7 @@ const csvtojson = require("csvtojson");
 function python_test(args) {
     console.log('Testing python')
     let options = {
+        pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
         args: ['-i "test data"'],
     }
     PythonShell.run('python/test.py', options, function (err, results) {
@@ -218,6 +219,7 @@ async function process_slices() {
                 // Split video into frames
                 let original_stats;
                 let options = {
+                    pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
                     args: [
                         '-i', prj.items[i].path,
                         '-o', prj.items[i].items[j].path_original,
@@ -240,6 +242,7 @@ async function process_slices() {
 
                         // Magnify the cut video results
                         options = {
+                            pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
                             args: [
                                 '--load_ckpt', './python/STB-VMM/ckpt/ckpt_e49.pth.tar',
                                 '--save_dir', prj.items[i].items[j].path_vmm,
@@ -279,6 +282,7 @@ async function process_slices() {
                             //console.log({ slice_files });
 
                             options = {
+                                pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
                                 args: [
                                     '-s', slice_start_coord[0], slice_start_coord[1],
                                     '-e', slice_end_coord[0], slice_end_coord[1],
@@ -747,6 +751,7 @@ function update_data_tab() {
             }
 
             let options = {
+                pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
                 args: [
                     '-u', prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up[0], prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up[1],
                     '-l', prj.items[elem[0]].items[elem[1]].pt_color_thrhd_low[0], prj.items[elem[0]].items[elem[1]].pt_color_thrhd_low[1],
@@ -791,6 +796,7 @@ function update_data_tab() {
 
         if (document.getElementById(`${prj.items[elem[0]].items[elem[1]].name}_chkbx`).checked) { // BW threshold
             let options = {
+                pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
                 args: [
                     '-t', document.getElementById(`${prj.items[elem[0]].items[elem[1]].name}_bw_range_slider_box`).value,
                     '-i', `${prj.items[elem[0]].items[elem[1]].path_slice}_slice.png`,
@@ -843,6 +849,7 @@ function update_data_tab() {
 
         if (document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_radio_avg`).checked) {
             options = {
+                pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
                 args: [
                     '-f', `${prj.items[elem[0]].framerate}`,
                     '-i', `${prj.items[elem[0]].items[elem[1]].items[signal_index].csv}`,
@@ -855,6 +862,7 @@ function update_data_tab() {
         }
         else if (document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_radio_lub`).checked) {
             options = {
+                pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
                 args: [
                     '-f', `${prj.items[elem[0]].framerate}`,
                     '-i', `${prj.items[elem[0]].items[elem[1]].items[signal_index].csv}`,
@@ -867,6 +875,7 @@ function update_data_tab() {
         }
         else if (document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_radio_ulb`).checked) {
             options = {
+                pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
                 args: [
                     '-f', `${prj.items[elem[0]].framerate}`,
                     '-i', `${prj.items[elem[0]].items[elem[1]].items[signal_index].csv}`,

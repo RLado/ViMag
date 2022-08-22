@@ -1,9 +1,12 @@
 #!/bin/bash
 set -e
 
-# Clone cpython
-echo "Clone cpython"
-git clone  --depth 1 --branch v3.10.6 https://github.com/python/cpython.git ./python/interpreter
+# Clone cpython (if needed)
+if [ ![ -f ./python/interpreter ] ]
+then
+    echo "Clone cpython"
+    git clone  --depth 1 --branch v3.10.6 https://github.com/python/cpython.git ./python/interpreter
+fi
 
 # Configure and compile
 echo "Configure and compile"
