@@ -252,6 +252,7 @@ async function process_slices() {
                                 '-j', 1,
                                 '-b', 1,
                                 '-m', 20,
+                                '--device', 'cpu',
                             ],
                         };
 

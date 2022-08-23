@@ -25,12 +25,12 @@ module.exports = {
     hooks: {
         generateAssets: async (forgeConfig, platform, arch) => { // Runs before start
             // Linux build
-            if (platform.platform === 'linux') {
-
+            if (platform === 'linux') {
+                
             }
 
             // Windows build
-            if (platform.platform === 'windows') {
+            if (platform === 'windows') {
                 
             }
         },

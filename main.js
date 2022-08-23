@@ -1,7 +1,26 @@
 // Import
+const fs = require('fs');
+const process = require('process');
+const path = require('path');
 const { app, BrowserWindow, Menu, ipcMain } = require('electron');
 const Main = require('electron/main');
 let { PythonShell } = require('python-shell');
+
+
+// Setup python environament
+console.log('Setting up python environament ...');
+let content = `
+    home = ${path.join(process.cwd(), 'python/interpreter')}
+    include-system-site-packages = false
+    version = 3.10.6
+    `;
+fs.writeFile(path.join(process.cwd(), 'python/interpreter/vibrolab_venv/pyvenv.cfg'), content, err => {
+    if (err) {
+        console.error(err);
+    }
+    // file written successfully
+});
+console.log('Done');
 
 // Define main window
 const createWindow = () => {
