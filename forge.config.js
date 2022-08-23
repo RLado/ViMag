@@ -8,9 +8,17 @@ module.exports = {
             name: '@electron-forge/maker-flatpak',
             platforms: ['linux'],
             config: {
-                summary: "A video vibration toolbox",
+                summary: 'A video vibration toolbox',
             },
         },
+        {
+            name: '@electron-forge/maker-squirrel',
+            platforms: ['windows'],
+            config: {
+                name: "vibrolab",
+            },
+        },
+        
     ],
     publishers: [],
     plugins: [],
@@ -21,6 +29,10 @@ module.exports = {
 
             }
 
+            // Windows build
+            if (platform.platform === 'windows') {
+                
+            }
         },
         
         prePackage: async (forgeConfig, platform, arch) => { // Runs before package
@@ -34,11 +46,25 @@ module.exports = {
             if (platform.platform === 'linux') {
                 
             }
+
+            // Windows build
+            if (platform.platform === 'windows') {
+
+            }
         },
         
         postPackage: async (forgeConfig, platform, arch) => { // Runs after package
             // Linux build
             if (platform.platform === 'linux') {
+                // Move python files to the root of the package
+                fse.move(
+                    "./out/vibrolab_dev/vibrolab-linux-x64/resources/app/python", 
+                    "./out/vibrolab_dev/vibrolab-linux-x64/python"
+                )
+            }
+
+            // Windows build
+            if (platform.platform === 'windows') {
                 // Move python files to the root of the package
                 fse.move(
                     "./out/vibrolab_dev/vibrolab-linux-x64/resources/app/python", 

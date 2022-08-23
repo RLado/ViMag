@@ -18,7 +18,7 @@ make -j 32
 
 # Create a venv
 echo "Create a venv"
-./python -m venv vibrolab_venv
+./python -m venv --copies vibrolab_venv
 source vibrolab_venv/bin/activate
 pip install --upgrade pip
 pip install -r ../STB-VMM/requirements.txt
