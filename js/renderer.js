@@ -4,7 +4,8 @@ let Dialogs = require('dialogs');
 const dialogs = Dialogs();
 
 const path = require('path');
-fs = require('fs');
+const fs = require('fs');
+const os = require('os');
 
 const { PythonShell } = require('python-shell');
 const csvtojson = require("csvtojson");
@@ -211,9 +212,9 @@ async function process_slices() {
 
 
                 // Set data destination
-                prj.items[i].items[j].path_original = prj.data + '/' + prj.items[i].items[j].name + '_original';
-                prj.items[i].items[j].path_vmm = prj.data + '/' + prj.items[i].items[j].name + '_vmm';
-                prj.items[i].items[j].path_slice = prj.data + '/' + prj.items[i].items[j].name + '_slice';
+                prj.items[i].items[j].path_original = path.join(prj.data, prj.items[i].items[j].name + '_original');
+                prj.items[i].items[j].path_vmm = path.join(prj.data, prj.items[i].items[j].name + '_vmm');
+                prj.items[i].items[j].path_slice = path.join(prj.data, prj.items[i].items[j].name + '_slice');
 
                 // Run python code
                 // Split video into frames
@@ -246,7 +247,7 @@ async function process_slices() {
                             args: [
                                 '--load_ckpt', './python/STB-VMM/ckpt/ckpt_e49.pth.tar',
                                 '--save_dir', prj.items[i].items[j].path_vmm,
-                                '--video_path', prj.items[i].items[j].path_original + '/frame',
+                                '--video_path', path.join(prj.items[i].items[j].path_original, 'frame'),
                                 '--num_data', nframes,
                                 '--mode', 'static',
                                 '-j', 1,
@@ -278,7 +279,7 @@ async function process_slices() {
                             // --Run python slicer
                             let slice_files = fs.readdirSync(prj.items[i].items[j].path_vmm);
                             for (let l = 0; l < slice_files.length; l++) {
-                                slice_files[l] = prj.items[i].items[j].path_vmm + '/' + slice_files[l];
+                                slice_files[l] = path.join(prj.items[i].items[j].path_vmm, slice_files[l]);
                             }
                             //console.log({ slice_files });
 
@@ -1011,7 +1012,12 @@ function update_accordions() { // Reads project object to populate the accordion
         // Video
         //console.log(prj.items[i].path);
         if (prj.items[i].type == 'video_datum') {
-            buffer += '<button id=\'' + prj.items[i].name + '\' class="accordion" ondblclick = "show_vid(\'' + prj.items[i].name + '\',\'' + prj.items[i].path + '\')" oncontextmenu = "sb_ctx_rightClick(' + prj.items[i].name + ')">' + prj.items[i].name + '</button>\n';
+            if (os.platform() === 'win32') {
+                buffer += '<button id=\'' + prj.items[i].name + '\' class="accordion" ondblclick = "show_vid(\'' + prj.items[i].name + '\',\'' + prj.items[i].path.replaceAll('\\', '\\\\') + '\')" oncontextmenu = "sb_ctx_rightClick(' + prj.items[i].name + ')">' + prj.items[i].name + '</button>\n';
+            }
+            else {
+                buffer += '<button id=\'' + prj.items[i].name + '\' class="accordion" ondblclick = "show_vid(\'' + prj.items[i].name + '\',\'' + prj.items[i].path + '\')" oncontextmenu = "sb_ctx_rightClick(' + prj.items[i].name + ')">' + prj.items[i].name + '</button>\n';
+            }
             buffer += '<div class="accordion_item">\n';
         }
         // Graph
@@ -1341,7 +1347,7 @@ ipcRenderer.on('new_prj', function (event, args) {
 // Video import
 ipcRenderer.on('vimport', function (event, args) {
     for (let i = 0; i < args.length; i++) {
-        imp_vid_name_temp = sanitizeString(args[i].split('/')[args[i].split('/').length - 1].split('.')[0]);
+        imp_vid_name_temp = sanitizeString(path.basename(args[i]).split('.')[0]);
         // Check if importing two elements with the same name
         if (prj_exists(imp_vid_name_temp)) {
             alert('Already created an element named: ' + imp_vid_name_temp);
@@ -1372,7 +1378,7 @@ ipcRenderer.on('save_path', function (event, args) { // Save as
     console.log({ prj });
 
     // Update prj_data
-    prj.data = path.dirname(args) + '/' + path.basename(args).split('.')[0] + '_data';
+    prj.data = path.join(path.dirname(args), path.basename(args).split('.')[0] + '_data');
 
     // Serialize project object
     let prj_dict_str = JSON.stringify(prj);

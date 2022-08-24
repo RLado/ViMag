@@ -9,12 +9,20 @@ let { PythonShell } = require('python-shell');
 
 // Setup python environament
 console.log('Setting up python environament ...');
-let content = `
-    home = ${path.join(process.cwd(), 'python/interpreter')}
-    include-system-site-packages = false
-    version = 3.10.6
-    `;
-fs.writeFile(path.join(process.cwd(), 'python/interpreter/vibrolab_venv/pyvenv.cfg'), content, err => {
+let pyvenv_content;
+if (process.platform === 'win32') {
+    pyvenv_content = `home = ${path.join(process.cwd(), 'python/interpreter/PCbuild/amd64')}
+include-system-site-packages = false
+version = 3.10.6
+`;
+}
+else {
+    pyvenv_content = `home = ${path.join(process.cwd(), 'python/interpreter')}
+include-system-site-packages = false
+version = 3.10.6
+`;
+}
+fs.writeFile(path.join(process.cwd(), 'python/interpreter/vibrolab_venv/pyvenv.cfg'), pyvenv_content, err => {
     if (err) {
         console.error(err);
     }
@@ -28,6 +36,7 @@ const createWindow = () => {
         title: 'VibroLab',
         width: 1200,
         height: 720,
+        //icon: './img/icon.ico',
         fullscreenable: false,
         //frame: False,
         webPreferences: {

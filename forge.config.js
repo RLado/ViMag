@@ -30,7 +30,7 @@ module.exports = {
             }
 
             // Windows build
-            if (platform === 'windows') {
+            if (platform === 'win32') {
                 
             }
         },
@@ -48,7 +48,7 @@ module.exports = {
             }
 
             // Windows build
-            if (platform.platform === 'windows') {
+            if (platform.platform === 'win32') {
 
             }
         },
@@ -64,11 +64,11 @@ module.exports = {
             }
 
             // Windows build
-            if (platform.platform === 'windows') {
+            if (platform.platform === 'win32') {
                 // Move python files to the root of the package
                 fse.move(
-                    "./out/vibrolab_dev/vibrolab-linux-x64/resources/app/python", 
-                    "./out/vibrolab_dev/vibrolab-linux-x64/python"
+                    "./out/vibrolab_dev/vibrolab-win32-x64/resources/app/python", 
+                    "./out/vibrolab_dev/vibrolab-win32-x64/python"
                 )
             }
         }, 

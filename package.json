@@ -5,6 +5,7 @@
   "main": "main.js",
   "scripts": {
     "dev_setup": "npm install && bash ./build_scripts/linux_x86_64.sh",
+    "dev_win_setup": "npm install && call ./build_scripts/windows_x86_64.bat && call ./build_scripts/windows_x86_64.bat",
     "start": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make"
