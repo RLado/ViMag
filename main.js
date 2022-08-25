@@ -36,7 +36,7 @@ const createWindow = () => {
         title: 'VibroLab',
         width: 1200,
         height: 720,
-        //icon: './img/icon.ico',
+        icon: './img/icon.ico',
         fullscreenable: false,
         //frame: False,
         webPreferences: {
@@ -120,6 +120,7 @@ const createWindow = () => {
                             title: 'About',
                             width: 340,
                             height: 215,
+                            icon: './img/icon.ico',
                             resizable: false,
                             fullscreenable: false,
                         });
