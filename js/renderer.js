@@ -1,14 +1,13 @@
 // Import ----------------------------------------------------------------------
 const { ipcRenderer } = require('electron');
-let Dialogs = require('dialogs'); // Don't like it
+let Dialogs = require('dialogs');
 const dialogs = Dialogs();
 
 const path = require('path');
-fs = require('fs');
+const fs = require('fs');
+const os = require('os');
 
 const { PythonShell } = require('python-shell');
-const getDimensions = require('get-video-dimensions');
-const sizeOfimg = require('image-size');
 const csvtojson = require("csvtojson");
 
 
@@ -16,6 +15,7 @@ const csvtojson = require("csvtojson");
 function python_test(args) {
     console.log('Testing python')
     let options = {
+        pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
         args: ['-i "test data"'],
     }
     PythonShell.run('python/test.py', options, function (err, results) {
@@ -24,7 +24,17 @@ function python_test(args) {
     });
 }
 
-// Get click position inside an element
+function getPromiseFromEvent(item, event) {
+    return new Promise((resolve) => {
+        const listener = () => {
+            item.removeEventListener(event, listener);
+            resolve();
+        }
+        item.addEventListener(event, listener);
+    })
+}
+
+// Get click position inside the video element in order to create a slice
 function setPtSlice(e) {
     let video_coords = video.getBoundingClientRect();
     let xPosition = e.clientX - video_coords.left;
@@ -40,6 +50,9 @@ function setPtSlice(e) {
         let target = find_data_by_name(vid_id_disp);
         prj.items[target[0]].items.push(new slice(`slice_${prj.name_num_count}`, [temp_slice_pt_start, temp_slice_pt_stop], false));
         prj.name_num_count++;
+
+        // Set project.saved to false
+        prj.saved = false;
 
         // Reset
         console.log(`Second slice pt: ${temp_slice_pt_stop}`);
@@ -83,11 +96,10 @@ function draw_slices() {
 // Toggle slicing mode
 function toggle_slice_mode() {
     draw_slices(); // Resize video canvas
+    let vcnvas = document.getElementById("video_canvas"); // Get video canvas
 
-    if (vid_id_disp != '' | slice_state) {
-        let vcnvas = document.getElementById("video_canvas"); //get video canvas
+    if (vid_id_disp != '') {
         slice_state = !slice_state; // Change state
-
         video.controls = !slice_state; // If not slicing show controls
 
         if (slice_state) {
@@ -105,11 +117,31 @@ function toggle_slice_mode() {
             vcnvas.removeEventListener('click', setPtSlice);
         }
     }
+    else {
+        slice_state = false;
+        video.controls = !slice_state; // If not slicing show controls
+
+        // Hide slice mode
+        document.getElementById("play-pause").style.visibility = "hidden";
+        vcnvas.style.visibility = "hidden";
+        window.removeEventListener("resize", draw_slices);
+        vcnvas.removeEventListener('click', setPtSlice);
+    }
 }
 
 
 // Proceses the slices through the python pipeline
 async function process_slices() {
+    if (!prj.saved && prj.path == null) {
+        alert("The project must be saved before processing");
+        ipcRenderer.send('save_as', null);
+        return null;
+    }
+    // Spin the icon to indicate it's working and disable functonality
+    document.getElementById("process_slices_btn").innerHTML = '<i class="fa fa-sm fa-cog fa-spin"></i>';
+    document.getElementById("process_slices_btn").onclick = null;
+
+    // Do the processing
     for (let i = 0; i < prj.items.length; i++) { // Level 1
         for (let j = 0; j < prj.items[i].items.length; j++) { // Level 2
             if (prj.items[i].items[j].type == 'slice' && !prj.items[i].items[j].processed) {
@@ -117,14 +149,15 @@ async function process_slices() {
                 console.log(prj.items[i].items[j].coord);
 
                 // Correct coords with original resolution
-                let video_res = await getDimensions(prj.items[i].path); //{width: 1920, height:1080};
+                show_vid(prj.items[i].name, prj.items[i].path);
+                await getPromiseFromEvent(video, 'loadedmetadata');
                 prj.items[i].items[j].true_coord = [[
-                    prj.items[i].items[j].coord[0][0] * video_res.width,
-                    prj.items[i].items[j].coord[0][1] * video_res.height,
+                    prj.items[i].items[j].coord[0][0] * video.videoWidth,
+                    prj.items[i].items[j].coord[0][1] * video.videoHeight,
                 ],
                 [
-                    prj.items[i].items[j].coord[1][0] * video_res.width,
-                    prj.items[i].items[j].coord[1][1] * video_res.height,
+                    prj.items[i].items[j].coord[1][0] * video.videoWidth,
+                    prj.items[i].items[j].coord[1][1] * video.videoHeight,
                 ]
                 ];
 
@@ -179,14 +212,15 @@ async function process_slices() {
 
 
                 // Set data destination
-                prj.items[i].items[j].path_original = prj.data + '/' + prj.items[i].items[j].name + '_original';
-                prj.items[i].items[j].path_vmm = prj.data + '/' + prj.items[i].items[j].name + '_vmm';
-                prj.items[i].items[j].path_slice = prj.data + '/' + prj.items[i].items[j].name + '_slice';
+                prj.items[i].items[j].path_original = path.join(prj.data, prj.items[i].items[j].name + '_original');
+                prj.items[i].items[j].path_vmm = path.join(prj.data, prj.items[i].items[j].name + '_vmm');
+                prj.items[i].items[j].path_slice = path.join(prj.data, prj.items[i].items[j].name + '_slice');
 
                 // Run python code
                 // Split video into frames
                 let original_stats;
                 let options = {
+                    pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
                     args: [
                         '-i', prj.items[i].path,
                         '-o', prj.items[i].items[j].path_original,
@@ -197,85 +231,95 @@ async function process_slices() {
 
                 //console.log({ options });
 
-                PythonShell.run('python/video2frames.py', options, function (err_v2f, results_v2f) {
-                    if (err_v2f) throw err_v2f; // Error callback
-
-                    // Results callback
-                    console.log('Video crop results: %j', results_v2f);
-                    prj.items[i].framerate = results_v2f[0].split(',')[1];
-                    let nframes = results_v2f[0].split(',')[2];
-                    nframes = nframes.slice(0, nframes.length - 1) - 1;
-
-                    // Magnify the cut video results
-                    options = {
-                        args: [
-                            '--load_ckpt', './python/STB-VMM/ckpt/ckpt_e49.pth.tar',
-                            '--save_dir', prj.items[i].items[j].path_vmm,
-                            '--video_path', prj.items[i].items[j].path_original + '/frame',
-                            '--num_data', nframes,
-                            '--mode', 'static',
-                            '-j', 1,
-                            '-b', 1,
-                            '-m', 20,
-                        ],
-                    };
-
-                    //console.log({ options });
-
-                    PythonShell.run('python/STB-VMM/run.py', options, function (err_STB, results_STB) {
-                        if (err_STB) throw err_STB; // Error callback
+                await new Promise((resolve, reject) => {
+                    PythonShell.run('python/video2frames.py', options, function (err_v2f, results_v2f) {
+                        if (err_v2f) throw err_v2f; // Error callback
 
                         // Results callback
-                        console.log({ results_STB });
+                        console.log('Video crop results: %j', results_v2f);
+                        prj.items[i].framerate = results_v2f[0].split(',')[1];
+                        let nframes = results_v2f[0].split(',')[2];
+                        nframes = nframes.slice(0, nframes.length - 1) - 1;
 
-                        // Run slicing
-                        // --Correct global coordinates to magnified window
-                        let slice_start_coord = [
-                            Math.round(prj.items[i].items[j].true_coord[0][0] - prj.items[i].items[j].win_coord[0]),
-                            Math.round(prj.items[i].items[j].true_coord[0][1] - prj.items[i].items[j].win_coord[1]),
-                        ];
-                        let slice_end_coord = [
-                            Math.round(prj.items[i].items[j].true_coord[1][0] - prj.items[i].items[j].win_coord[0]),
-                            Math.round(prj.items[i].items[j].true_coord[1][1] - prj.items[i].items[j].win_coord[1]),
-                        ];
-
-                        // --Run python slicer
-                        let slice_files = fs.readdirSync(prj.items[i].items[j].path_vmm);
-                        for (let l = 0; l < slice_files.length; l++) {
-                            slice_files[l] = prj.items[i].items[j].path_vmm + '/' + slice_files[l];
-                        }
-                        console.log({ slice_files });
-
+                        // Magnify the cut video results
                         options = {
+                            pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
                             args: [
-                                '-s', slice_start_coord[0], slice_start_coord[1],
-                                '-e', slice_end_coord[0], slice_end_coord[1],
-                                '-o', prj.items[i].items[j].path_slice,
-                                '-i',
-                            ].concat(slice_files),
+                                '--load_ckpt', './python/STB-VMM/ckpt/ckpt_e49.pth.tar',
+                                '--save_dir', prj.items[i].items[j].path_vmm,
+                                '--video_path', path.join(prj.items[i].items[j].path_original, 'frame'),
+                                '--num_data', nframes,
+                                '--mode', 'static',
+                                '-j', 1,
+                                '-b', 1,
+                                '-m', 20,
+                                '--device', 'cpu',
+                            ],
                         };
 
-                        PythonShell.run('python/TempSlice/tempslice.py', options, function (err_slice, results_slice) {
-                            if (err_slice) throw err_slice; // Error callback
+                        //console.log({ options });
+
+                        PythonShell.run('python/STB-VMM/run.py', options, function (err_STB, results_STB) {
+                            if (err_STB) throw err_STB; // Error callback
 
                             // Results callback
-                            console.log(`Slice for ${prj.items[i].items[j].name} completed`);
+                            //console.log({ results_STB });
 
-                            // Flag as processed
-                            prj.items[i].items[j].processed = true;
+                            // Run slicing
+                            // --Correct global coordinates to magnified window
+                            let slice_start_coord = [
+                                Math.round(prj.items[i].items[j].true_coord[0][0] - prj.items[i].items[j].win_coord[0]),
+                                Math.round(prj.items[i].items[j].true_coord[0][1] - prj.items[i].items[j].win_coord[1]),
+                            ];
+                            let slice_end_coord = [
+                                Math.round(prj.items[i].items[j].true_coord[1][0] - prj.items[i].items[j].win_coord[0]),
+                                Math.round(prj.items[i].items[j].true_coord[1][1] - prj.items[i].items[j].win_coord[1]),
+                            ];
 
-                            // Update data_tab
-                            update_data_tab();
+                            // --Run python slicer
+                            let slice_files = fs.readdirSync(prj.items[i].items[j].path_vmm);
+                            for (let l = 0; l < slice_files.length; l++) {
+                                slice_files[l] = path.join(prj.items[i].items[j].path_vmm, slice_files[l]);
+                            }
+                            //console.log({ slice_files });
+
+                            options = {
+                                pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
+                                args: [
+                                    '-s', slice_start_coord[0], slice_start_coord[1],
+                                    '-e', slice_end_coord[0], slice_end_coord[1],
+                                    '-o', prj.items[i].items[j].path_slice,
+                                    '-i',
+                                ].concat(slice_files),
+                            };
+
+                            PythonShell.run('python/TempSlice/tempslice.py', options, function (err_slice, results_slice) {
+                                if (err_slice) throw err_slice; // Error callback
+
+                                // Results callback
+                                console.log(`Slice for ${prj.items[i].items[j].name} completed`);
+
+                                // Flag as processed
+                                prj.items[i].items[j].processed = true;
+
+                                // Update data_tab
+                                update_data_tab();
+
+                                // Resolve promise
+                                resolve({ success: true });
+                            });
 
                         });
 
                     });
-
                 });
 
             }
         }
     }
+    // Stop the spinning icon and restore functionality
+    document.getElementById("process_slices_btn").innerHTML = '<i class="fa fa-sm fa-cog"></i>';
+    document.getElementById("process_slices_btn").onclick = function () { process_slices(); };
 }
 
 // Populate data tab
@@ -292,23 +336,24 @@ function update_data_tab() {
 
                 // Add sliders and image
                 data_tab_contents.innerHTML += `
-                    <p>
                     <hr color=#a6a6a6>
                     <h3>${prj.items[i].items[j].name}</h3>
 
-                    <input type="checkbox" id="${prj.items[i].items[j].name}_chkbx">
-                    <label for="${prj.items[i].items[j].name}_chkbx"> B/W threshold </label>
-                    <input id="${prj.items[i].items[j].name}_bw_range_slider" type="range" min="0" max="255" value="128" oninput="${prj.items[i].items[j].name}_bw_range_slider_box.value=${prj.items[i].items[j].name}_bw_range_slider.value">
-                    <input id="${prj.items[i].items[j].name}_bw_range_slider_box" type="number" min="0" max="255" value="128" oninput="${prj.items[i].items[j].name}_bw_range_slider.value=${prj.items[i].items[j].name}_bw_range_slider_box.value">
-                    <br>
+                    <p>
+                        <input type="checkbox" id="${prj.items[i].items[j].name}_chkbx" class="generic_chkbox">
+                        <label for="${prj.items[i].items[j].name}_chkbx"> B/W threshold </label>
+                        <input id="${prj.items[i].items[j].name}_bw_range_slider" class="generic_slider" type="range" min="0" max="255" value="128" oninput="${prj.items[i].items[j].name}_bw_range_slider_box.value=${prj.items[i].items[j].name}_bw_range_slider.value">
+                        <input id="${prj.items[i].items[j].name}_bw_range_slider_box" class="generic_box" type="number" min="0" max="255" value="128" oninput="${prj.items[i].items[j].name}_bw_range_slider.value=${prj.items[i].items[j].name}_bw_range_slider_box.value">
+                    </p>
                     
-                    Color threshold: 
-                    <input id="${prj.items[i].items[j].name}_color_range_slider" type="range" min="0" max="255" value="15" oninput="${prj.items[i].items[j].name}_color_range_slider_box.value=${prj.items[i].items[j].name}_color_range_slider.value">
-                    <input id="${prj.items[i].items[j].name}_color_range_slider_box" type="number" min="0" max="255" value="15" oninput="${prj.items[i].items[j].name}_color_range_slider.value=${prj.items[i].items[j].name}_color_range_slider_box.value">
-                    <br>
+                    <p>
+                        Color threshold: 
+                        <input id="${prj.items[i].items[j].name}_color_range_slider" class="generic_slider" type="range" min="0" max="255" value="15" oninput="${prj.items[i].items[j].name}_color_range_slider_box.value=${prj.items[i].items[j].name}_color_range_slider.value">
+                        <input id="${prj.items[i].items[j].name}_color_range_slider_box" class="generic_box" type="number" min="0" max="255" value="15" oninput="${prj.items[i].items[j].name}_color_range_slider.value=${prj.items[i].items[j].name}_color_range_slider_box.value">
+                    </p>
 
-                    <img id="${prj.items[i].items[j].name}_slice_img" src="${prj.items[i].items[j].path_slice}_slice.png" class="slice_img">
-
+                    <p>
+                        <img id="${prj.items[i].items[j].name}_slice_img" src="${prj.items[i].items[j].path_slice}_slice.png" class="slice_img">
                     </p>
                 `;
 
@@ -318,7 +363,9 @@ function update_data_tab() {
                         // Add canvas
                         data_tab_contents.innerHTML += `
                             <p>Signal:</p>
-                            <canvas id="${prj.items[i].items[j].items[k].name}_chart" class="slice_img"></canvas><br>
+                            <p>
+                                <canvas id="${prj.items[i].items[j].items[k].name}_chart" class="graph_format_legend"></canvas>
+                            </p>
                         `;
 
                         // Populate canvas with chart
@@ -326,62 +373,116 @@ function update_data_tab() {
                             then((data) => {
                                 //console.log(data);
                                 const data_time = data.map((obj) => obj.time);
-                                const data_ulbp = data.map((obj) => obj['upper lower band pixel']);
-                                const data_lubp = data.map((obj) => obj['lower upper band pixel']);
+                                const data_ulbp = data.map((obj) => - obj['upper lower band pixel']);
+                                const data_lubp = data.map((obj) => - obj['lower upper band pixel']);
+
+                                // Convert data into the necessary dataset format
+                                let signal_ulbp_plot_data = [];
+                                let signal_lubp_plot_data = [];
+                                for (let n = 0; n < data_time.length; n++) {
+                                    signal_ulbp_plot_data.push({ x: data_time[n], y: data_ulbp[n] });
+                                    signal_lubp_plot_data.push({ x: data_time[n], y: data_lubp[n] });
+                                }
 
                                 new Chart(`${prj.items[i].items[j].items[k].name}_chart`, {
-                                    type: "line",
+                                    type: "scatter",
                                     data: {
-                                        labels: data_time,
                                         datasets: [{
                                             label: 'upper lower bound',
-                                            data: data_ulbp,
-                                            borderColor: "red",
+                                            data: signal_ulbp_plot_data,
+                                            showLine: true,
+                                            borderColor: '#205fac',
                                             fill: false,
                                         }, {
                                             label: 'lower upper bound',
-                                            data: data_lubp,
-                                            borderColor: "blue",
+                                            data: signal_lubp_plot_data,
+                                            showLine: true,
+                                            borderColor: '#474747',
                                             fill: false,
                                         }]
                                     },
                                     options: {
-                                        legend: { display: false },
-                                    }
+                                        animation: false,
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        elements: {
+                                            point: {
+                                                radius: 0,
+                                            },
+                                        },
+                                        plugins: {
+                                            legend: {
+                                                display: true,
+                                                position: 'bottom',
+                                            },
+                                        },
+                                        scales: {
+                                            x: {
+                                                title: {
+                                                    display: true,
+                                                    text: 'px',
+                                                    color: '#000000',
+                                                },
+                                                grid: {
+                                                    color: '#00000010',
+                                                    borderColor: '#000000',
+                                                },
+                                                ticks: {
+                                                    color: '#000000',
+                                                    maxTicksLimit: '10',
+                                                },
+                                            },
+                                            y: {
+                                                title: {
+                                                    display: true,
+                                                    text: 'px',
+                                                    color: '#000000',
+                                                },
+                                                grid: {
+                                                    color: '#00000010',
+                                                    borderColor: '#000000',
+                                                },
+                                                ticks: {
+                                                    color: '#000000',
+                                                    maxTicksLimit: '10',
+                                                },
+                                            },
+                                        },
+                                    },
                                 });
                             });
                     }
 
                     if (prj.items[i].items[j].items[k].type == 'FFT') { // FFTs
                         data_tab_contents.innerHTML += `
-                            <p>FFT: <button id="${prj.items[i].items[j].items[k].name}_compute_btn"> Compute </button></p>
+                            <p>FFT: <button id="${prj.items[i].items[j].items[k].name}_compute_btn" class="generic_button"> Compute </button></p>
                             <p>
                                 Data: 
-                                <input type="radio" name="${prj.items[i].items[j].items[k].name}_data_col" value="avg" id="${prj.items[i].items[j].items[k].name}_radio_avg">
+                                <input type="radio" name="${prj.items[i].items[j].items[k].name}_data_col" class="generic_radio" value="avg" id="${prj.items[i].items[j].items[k].name}_radio_avg">
                                 <label for="${prj.items[i].items[j].items[k].name}_radio_avg">avg</label> 
-                                <input type="radio" name="${prj.items[i].items[j].items[k].name}_data_col" value="lub" id="${prj.items[i].items[j].items[k].name}_radio_lub">
+                                <input type="radio" name="${prj.items[i].items[j].items[k].name}_data_col" class="generic_radio" value="lub" id="${prj.items[i].items[j].items[k].name}_radio_lub">
                                 <label for="${prj.items[i].items[j].items[k].name}_radio_lub">lub</label> 
-                                <input type="radio" name="${prj.items[i].items[j].items[k].name}_data_col" value="ulb" id="${prj.items[i].items[j].items[k].name}_radio_ulb" checked>
+                                <input type="radio" name="${prj.items[i].items[j].items[k].name}_data_col" class="generic_radio" value="ulb" id="${prj.items[i].items[j].items[k].name}_radio_ulb" checked>
                                 <label for="${prj.items[i].items[j].items[k].name}_radio_ulb">ulb</label> 
                             </p>
                             <p>
-                                <input type="checkbox" id="${prj.items[i].items[j].items[k].name}_smth_chkbx">
+                                <input type="checkbox" id="${prj.items[i].items[j].items[k].name}_smth_chkbx" class="generic_chkbox">
                                 <label for="${prj.items[i].items[j].items[k].name}_smth_chkbx"> Smooth </label>
-                                <input id="${prj.items[i].items[j].items[k].name}_smth_slider" type="range" min="0" max="1" step="0.01" value="0.02" oninput="${prj.items[i].items[j].items[k].name}_smth_slider_box.value=${prj.items[i].items[j].items[k].name}_smth_slider.value">
-                                <input id="${prj.items[i].items[j].items[k].name}_smth_slider_box" type="number" min="0" max="1" value="0.02" oninput="${prj.items[i].items[j].items[k].name}_smth_slider.value=${prj.items[i].items[j].items[k].name}_smth_slider_box.value">
+                                <input id="${prj.items[i].items[j].items[k].name}_smth_slider" class="generic_slider" type="range" min="0" max="1" step="0.01" value="0.02" oninput="${prj.items[i].items[j].items[k].name}_smth_slider_box.value=${prj.items[i].items[j].items[k].name}_smth_slider.value">
+                                <input id="${prj.items[i].items[j].items[k].name}_smth_slider_box" class="generic_box" type="number" min="0" max="1" step="0.01" value="0.02" oninput="${prj.items[i].items[j].items[k].name}_smth_slider.value=${prj.items[i].items[j].items[k].name}_smth_slider_box.value">
                             </p>
                             <p>
-                                <canvas id="${prj.items[i].items[j].items[k].name}_chart" class="slice_img"></canvas>
+                                <canvas id="${prj.items[i].items[j].items[k].name}_chart" class="graph_format"></canvas>
                             </p>
                             <p>
                                 <!-- y_axis scale: 
-                                <input type="radio" name="${prj.items[i].items[j].items[k].name}_scale" value="mag" id="${prj.items[i].items[j].items[k].name}_radio_mag" checked>
+                                <input type="radio" name="${prj.items[i].items[j].items[k].name}_scale" class="generic_radio" value="mag" id="${prj.items[i].items[j].items[k].name}_radio_mag" checked>
                                 <label for="${prj.items[i].items[j].items[k].name}_radio_mag">mag</label> 
-                                <input type="radio" name="${prj.items[i].items[j].items[k].name}_scale" value="log" id="${prj.items[i].items[j].items[k].name}_radio_log">
+                                <input type="radio" name="${prj.items[i].items[j].items[k].name}_scale" class="generic_radio" value="log" id="${prj.items[i].items[j].items[k].name}_radio_log">
                                 <label for="${prj.items[i].items[j].items[k].name}_radio_log">log</label> -->
                                 Crop: 
-                                <input id="${prj.items[i].items[j].items[k].name}_crop_start_box" type="number" min="0" max="${prj.items[i].framerate / 2}" value="1.5">
-                                <input id="${prj.items[i].items[j].items[k].name}_crop_stop_box" type="number" min="0" max="${prj.items[i].framerate / 2}" value="${prj.items[i].framerate / 2}">
+                                <input id="${prj.items[i].items[j].items[k].name}_crop_start_box" class="generic_box" type="number" min="0" max="${prj.items[i].framerate / 2}" value="1.5" step="0.1">
+                                <input id="${prj.items[i].items[j].items[k].name}_crop_stop_box" class="generic_box" type="number" min="0" max="${prj.items[i].framerate / 2}" value="${prj.items[i].framerate / 2}" step="0.1">
                             </p>
                         `;
 
@@ -393,20 +494,73 @@ function update_data_tab() {
                                 let data_imag = data.map((obj) => obj['imag']);
                                 let data_mag = data.map((obj) => obj['mag']);
 
+                                // Convert data into the necessary dataset format
+                                let FFT_plot_data = [];
+                                for (let n = 0; n < data_freq.length; n++) {
+                                    FFT_plot_data.push({ x: data_freq[n], y: data_mag[n] });
+                                }
+
                                 new Chart(`${prj.items[i].items[j].items[k].name}_chart`, {
-                                    type: "line",
+                                    type: "scatter",
                                     data: {
-                                        labels: data_freq,
-                                        datasets: [{
-                                            label: 'mag',
-                                            data: data_mag,
-                                            borderColor: "red",
-                                            fill: false,
-                                        },]
+                                        datasets: [
+                                            {
+                                                label: 'FFT',
+                                                data: FFT_plot_data,
+                                                showLine: true,
+                                                fill: false,
+                                                borderColor: '#205fac',
+                                            },
+                                        ]
                                     },
                                     options: {
-                                        legend: { display: false },
-                                    }
+                                        animation: false,
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        elements: {
+                                            point: {
+                                                radius: 0,
+                                            },
+                                        },
+                                        plugins: {
+                                            legend: {
+                                                display: false,
+                                                position: 'bottom',
+                                            },
+                                        },
+                                        scales: {
+                                            x: {
+                                                title: {
+                                                    display: true,
+                                                    text: 'Hz',
+                                                    color: '#000000',
+                                                },
+                                                grid: {
+                                                    color: '#00000010',
+                                                    borderColor: '#000000',
+                                                },
+                                                ticks: {
+                                                    color: '#000000',
+                                                    precision: 2,
+                                                },
+                                            },
+                                            y: {
+                                                title: {
+                                                    display: true,
+                                                    text: 'Mag. (px)',
+                                                    color: '#000000',
+                                                },
+                                                grid: {
+                                                    color: '#00000010',
+                                                    borderColor: '#000000',
+                                                },
+                                                ticks: {
+                                                    color: '#000000',
+                                                    precision: 2,
+                                                },
+                                            },
+                                        },
+                                    },
                                 });
                             }).catch(() => {
                                 // Do nothing
@@ -552,15 +706,13 @@ function update_data_tab() {
             prj.items[elem[0]].items[elem[1]].pt_color_thrhd_low = [xPosition / img_coords.width, yPosition / img_coords.height];
 
             // Correct coordinates
-            const original_img_size = sizeOfimg(`${prj.items[elem[0]].items[elem[1]].path_slice}_slice.png`); // Read img res
-
-            prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up = [
-                Math.round(prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up[0] * original_img_size.width),
-                Math.round(prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up[0] * original_img_size.height),
+            prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up = [ // Use floor() instead of round() to avoid out of range
+                Math.floor(prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up[0] * img.naturalWidth),
+                Math.floor(prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up[0] * img.naturalHeight),
             ];
             prj.items[elem[0]].items[elem[1]].pt_color_thrhd_low = [
-                Math.round(prj.items[elem[0]].items[elem[1]].pt_color_thrhd_low[0] * original_img_size.width),
-                Math.round(prj.items[elem[0]].items[elem[1]].pt_color_thrhd_low[1] * original_img_size.height),
+                Math.floor(prj.items[elem[0]].items[elem[1]].pt_color_thrhd_low[0] * img.naturalWidth),
+                Math.floor(prj.items[elem[0]].items[elem[1]].pt_color_thrhd_low[1] * img.naturalHeight),
             ];
 
             // Run slice2csv
@@ -574,15 +726,34 @@ function update_data_tab() {
             }
 
             // Initialize new signal & fft object (if needed)
-            if (prj.items[elem[0]].items[elem[1]].items.length == 0) {
+            // Check if new signals or FFTs are needed
+            let has_signal = false;
+            let has_fft = false;
+            for (let i = 0; i < prj.items[elem[0]].items[elem[1]].items.length; i++) {
+                if (prj.items[elem[0]].items[elem[1]].items[i].type == 'signal') {
+                    has_signal = true;
+                }
+                if (prj.items[elem[0]].items[elem[1]].items[i].type == 'FFT') {
+                    has_fft = true;
+                }
+            }
+            if (!has_signal) {
                 // Add new signal object
                 prj.items[elem[0]].items[elem[1]].items.push(new signal(`${prj.items[elem[0]].items[elem[1]].name}_signal`, `${bw_img}.csv`));
 
+                // Set project.saved to false
+                prj.saved = false;
+            }
+            if (!has_fft) {
                 // Add new FFT object
                 prj.items[elem[0]].items[elem[1]].items.push(new FFT(`${prj.items[elem[0]].items[elem[1]].name}_FFT`, `${prj.items[elem[0]].items[elem[1]].items[0].csv}_fft.csv`, crop_stop_box = prj.items[elem[0]].framerate / 2));
+
+                // Set project.saved to false
+                prj.saved = false;
             }
 
             let options = {
+                pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
                 args: [
                     '-u', prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up[0], prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up[1],
                     '-l', prj.items[elem[0]].items[elem[1]].pt_color_thrhd_low[0], prj.items[elem[0]].items[elem[1]].pt_color_thrhd_low[1],
@@ -595,7 +766,14 @@ function update_data_tab() {
             //console.log({ options });
 
             PythonShell.run('python/TempSlice/slice2csv.py', options, function (err_s2csv, results_s2csv) {
-                if (err_s2csv) throw err_s2csv; // Error callback
+                if (err_s2csv) {
+                    // Reset
+                    prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up = [-1, -1];
+                    prj.items[elem[0]].items[elem[1]].pt_color_thrhd_low = [-1, -1];
+
+                    // Error throw callback
+                    throw err_s2csv;
+                }
 
                 // Results callback
                 console.log(`slice2csv for ${prj.items[elem[0]].items[elem[1]].name} completed`);
@@ -620,6 +798,7 @@ function update_data_tab() {
 
         if (document.getElementById(`${prj.items[elem[0]].items[elem[1]].name}_chkbx`).checked) { // BW threshold
             let options = {
+                pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
                 args: [
                     '-t', document.getElementById(`${prj.items[elem[0]].items[elem[1]].name}_bw_range_slider_box`).value,
                     '-i', `${prj.items[elem[0]].items[elem[1]].path_slice}_slice.png`,
@@ -656,11 +835,26 @@ function update_data_tab() {
             document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_crop_stop_box`).value = prj.items[elem[0]].framerate / 2;
         }
 
+        // Search for signal component in the item array (generally 0)
+        let signal_index = null;
+        for (let i = 0; i < prj.items[elem[0]].items[elem[1]].items.length; i++) {
+            if (prj.items[elem[0]].items[elem[1]].items[i].type == 'signal') {
+                signal_index = i;
+                break;
+            }
+        }
+        if (signal_index === null) {
+            //console.log("No signal found in slice. Could not calculate FFT.");
+            alert('No signal found. Could not calculate FFT.');
+            return null;
+        }
+
         if (document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_radio_avg`).checked) {
             options = {
+                pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
                 args: [
                     '-f', `${prj.items[elem[0]].framerate}`,
-                    '-i', `${prj.items[elem[0]].items[elem[1]].items[0].csv}`,
+                    '-i', `${prj.items[elem[0]].items[elem[1]].items[signal_index].csv}`,
                     '-o', `${prj.items[elem[0]].items[elem[1]].items[elem[2]].csv}_graph.png`,
                     '-od', `${prj.data}`,
                     '-c', document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_crop_start_box`).value, document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_crop_stop_box`).value,
@@ -670,9 +864,10 @@ function update_data_tab() {
         }
         else if (document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_radio_lub`).checked) {
             options = {
+                pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
                 args: [
                     '-f', `${prj.items[elem[0]].framerate}`,
-                    '-i', `${prj.items[elem[0]].items[elem[1]].items[0].csv}`,
+                    '-i', `${prj.items[elem[0]].items[elem[1]].items[signal_index].csv}`,
                     '-o', `${prj.items[elem[0]].items[elem[1]].items[elem[2]].csv}_graph.png`,
                     '-od', `${prj.data}`,
                     '-c', document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_crop_start_box`).value, document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_crop_stop_box`).value,
@@ -682,9 +877,10 @@ function update_data_tab() {
         }
         else if (document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_radio_ulb`).checked) {
             options = {
+                pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
                 args: [
                     '-f', `${prj.items[elem[0]].framerate}`,
-                    '-i', `${prj.items[elem[0]].items[elem[1]].items[0].csv}`,
+                    '-i', `${prj.items[elem[0]].items[elem[1]].items[signal_index].csv}`,
                     '-o', `${prj.items[elem[0]].items[elem[1]].items[elem[2]].csv}_graph.png`,
                     '-od', `${prj.data}`,
                     '-c', document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_crop_start_box`).value, document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_crop_stop_box`).value,
@@ -733,6 +929,7 @@ function toggleNav() {
 
     // Update UI
     draw_slices();
+    setTimeout(() => draw_slices(), 500); // wait for resize transition to redraw
 }
 
 function openNav() {
@@ -761,15 +958,15 @@ function toggleDataTab() {
 }
 
 function openDataTab() {
-    document.getElementById("data_tab_arrow").src = "img/DownArrow.png";
+    document.getElementById("toggle_data_tab").innerHTML = '<i class="fa-solid fa-caret-down"></i>';
     document.getElementById("data_tab").style.overflow = "auto";
-    document.getElementById("data_tab").style.height = "95%";
+    document.getElementById("data_tab").style.height = "calc(100% - 15px)";
 }
 
 function closeDataTab() {
-    document.getElementById("data_tab_arrow").src = "img/UpArrow.png";
+    document.getElementById("toggle_data_tab").innerHTML = '<i class="fa-solid fa-caret-up"></i>';
     document.getElementById("data_tab").style.overflow = "hidden";
-    document.getElementById("data_tab").style.height = "20px";
+    document.getElementById("data_tab").style.height = "15px";
 }
 
 // Video player
@@ -783,18 +980,31 @@ function togglePlay() {
 }
 
 function show_vid(name, path) {
+    // Reset slice mode
+    vid_id_disp = '';
+    toggle_slice_mode(); //draw_slices();
+
+    // Change video
     video.src = path;
     video.poster = '';
     vid_id_disp = name;
-    draw_slices();
 
     console.log('video: ' + path);
 }
 
 function update_accordions() { // Reads project object to populate the accordions
-    // Should use string substitution instead
+    // Save accordion states (To later unfold)
+    let acc = document.getElementsByClassName("accordion");
+    let unfolded_acc = [];
 
-    var target = document.getElementById("Sidebar");
+    for (let i = 0; i < acc.length; i++) {
+        if (acc[i].classList.contains("active")) {
+            unfolded_acc.push(acc[i].id);
+        }
+    }
+
+    // Update
+    let target = document.getElementById("Sidebar");
     //target.innerHTML = ''; // Empty out the code
     let buffer = '';
 
@@ -802,7 +1012,12 @@ function update_accordions() { // Reads project object to populate the accordion
         // Video
         //console.log(prj.items[i].path);
         if (prj.items[i].type == 'video_datum') {
-            buffer += '<button id=\'' + prj.items[i].name + '\' class="accordion" ondblclick = "show_vid(\'' + prj.items[i].name + '\',\'' + prj.items[i].path + '\')" oncontextmenu = "sb_ctx_rightClick(' + prj.items[i].name + ')">' + prj.items[i].name + '</button>\n';
+            if (os.platform() === 'win32') {
+                buffer += '<button id=\'' + prj.items[i].name + '\' class="accordion" ondblclick = "show_vid(\'' + prj.items[i].name + '\',\'' + prj.items[i].path.replaceAll('\\', '\\\\') + '\')" oncontextmenu = "sb_ctx_rightClick(' + prj.items[i].name + ')">' + prj.items[i].name + '</button>\n';
+            }
+            else {
+                buffer += '<button id=\'' + prj.items[i].name + '\' class="accordion" ondblclick = "show_vid(\'' + prj.items[i].name + '\',\'' + prj.items[i].path + '\')" oncontextmenu = "sb_ctx_rightClick(' + prj.items[i].name + ')">' + prj.items[i].name + '</button>\n';
+            }
             buffer += '<div class="accordion_item">\n';
         }
         // Graph
@@ -827,25 +1042,33 @@ function update_accordions() { // Reads project object to populate the accordion
     target.innerHTML = buffer;
 
     // Add accordions click events
-    let acc = document.getElementsByClassName("accordion");
+    acc = document.getElementsByClassName("accordion");
 
-    for (let i = 0; i < acc.length; i++) {
-        acc[i].addEventListener("click", function () {
-            // Toggle between adding and removing the "active" class, to highlight the button that controls the panel
-            this.classList.toggle("active");
+    function toggle_acc_item(acc_item) {
+        // Toggle between adding and removing the "active" class, to highlight the button that controls the panel
+        acc_item.classList.toggle("active");
 
-            // Toggle between hiding and showing the active panel
-            var panel = this.nextElementSibling;
+        // Toggle between hiding and showing the active panel
+        let panel = acc_item.nextElementSibling;
+        if (panel != null) { // panel will be null at the end of the hierarchy
             if (panel.style.display === "block") {
                 panel.style.display = "none";
             } else {
                 panel.style.display = "block";
             }
-        });
+        }
     }
 
-    // Set project.saved to false
-    prj.saved = false;
+    for (let i = 0; i < acc.length; i++) {
+        acc[i].addEventListener("click", function () {
+            toggle_acc_item(this);
+        });
+
+        // Restore unfolded accordions
+        if (unfolded_acc.includes(acc[i].id)) {
+            toggle_acc_item(acc[i]);
+        }
+    }
 
     // Update data_tab
     update_data_tab();
@@ -980,6 +1203,9 @@ function rename_prj_elem(elem) {
         })
         //prj.items[target[0]].items[target[1]].items[target[2]].name = prompt("Rename:", prj.items[target[0]].items[target[1]].items[target[2]].name);
     }
+
+    // Set project.saved to false
+    prj.saved = false;
 }
 
 function delete_prj_elem(elem) {
@@ -992,7 +1218,6 @@ function delete_prj_elem(elem) {
         prj.items.splice(target[0], 1);
 
         show_vid('', ''); // Deactivate video player to force reselection
-        toggle_slice_mode(); // Deactivate slice mode
     }
     else if (target[2] == -1) {
         prj.items[target[0]].items.splice(target[1], 1);
@@ -1004,15 +1229,19 @@ function delete_prj_elem(elem) {
     // Update interface
     update_accordions();
     draw_slices();
+
+    // Set project.saved to false
+    prj.saved = false;
 }
 
 
 // Classes ---------------------------------------------------------------------
 class prj_dict {
-    constructor(name, saved = false, items = []) {
+    constructor(name, path = null, saved = false, items = []) {
         this.type = 'prj_dict';
         this.name = name;
         this.saved = saved;
+        this.path = path;
         this.items = items;
         this.data = '';
 
@@ -1109,12 +1338,16 @@ ipcRenderer.on('new_prj', function (event, args) {
     }
     update_accordions();
     show_vid('', ''); // Deactivate video player to force reselection
+
+    // Stop the spinning icon and restore functionality (if it was)
+    document.getElementById("process_slices_btn").innerHTML = '<i class="fa fa-sm fa-cog"></i>';
+    document.getElementById("process_slices_btn").onclick = function () { process_slices(); };
 });
 
 // Video import
 ipcRenderer.on('vimport', function (event, args) {
     for (let i = 0; i < args.length; i++) {
-        imp_vid_name_temp = sanitizeString(args[i].split('/')[args[i].split('/').length - 1].split('.')[0]);
+        imp_vid_name_temp = sanitizeString(path.basename(args[i]).split('.')[0]);
         // Check if importing two elements with the same name
         if (prj_exists(imp_vid_name_temp)) {
             alert('Already created an element named: ' + imp_vid_name_temp);
@@ -1124,20 +1357,28 @@ ipcRenderer.on('vimport', function (event, args) {
             // Import elements
             prj.items.push(new video_datum(imp_vid_name_temp, args[i]));
             show_vid(imp_vid_name_temp, args[i]);
+
+            // Set project.saved to false
+            prj.saved = false;
         }
     }
     update_accordions();
 });
 
+function vimport_req() { // Request video import from button
+    ipcRenderer.send('vimport_req', null);
+}
+
 // Save project
-ipcRenderer.on('save_path', function (event, args) {
+ipcRenderer.on('save_path', function (event, args) { // Save as
     prj.saved = true;
     prj.name = path.basename(args);
+    prj.path = args; // Set project.path (to avoid always saving as)
 
     console.log({ prj });
 
     // Update prj_data
-    prj.data = path.dirname(args) + '/' + path.basename(args).split('.')[0] + '_data';
+    prj.data = path.join(path.dirname(args), path.basename(args).split('.')[0] + '_data');
 
     // Serialize project object
     let prj_dict_str = JSON.stringify(prj);
@@ -1157,12 +1398,53 @@ ipcRenderer.on('save_path', function (event, args) {
     });
 });
 
+function save() {
+    if (prj.path != null) {
+        prj.saved = true;
+
+        // Serialize project object
+        let prj_dict_str = JSON.stringify(prj);
+
+        // Write to file
+        fs.writeFile(prj.path, prj_dict_str, 'utf8', function (err) {
+            if (err) {
+                return console.log(err);
+            } else {
+                console.log('Saved');
+            }
+        });
+    }
+    else {
+        // Use the Save As dialog
+        ipcRenderer.send('save_as', null);
+    }
+}
+
+ipcRenderer.on('save', function (event, args) { // Save
+    save()
+});
+
 // Load project
-ipcRenderer.on('load_path', function (event, args) {
+function load(args) {
     let prj_dict_str = fs.readFileSync(args, 'utf-8').toString();
     prj = JSON.parse(prj_dict_str);
     console.log({ prj });
     update_accordions();
+
+    // Clean UI
+    show_vid('', ''); // Deactivate video player to force reselection
+
+    // Stop the spinning icon and restore functionality (if it was)
+    document.getElementById("process_slices_btn").innerHTML = '<i class="fa fa-sm fa-cog"></i>';
+    document.getElementById("process_slices_btn").onclick = function () { process_slices(); };
+}
+
+function load_req() {
+    ipcRenderer.send('load_req', null);
+}
+
+ipcRenderer.on('load_path', function (event, args) {
+    load(args);
 });
 
 

@@ -1,3 +1,11 @@
+body {
+  overflow-x: hidden;
+  /*hidden*/
+  font-family: Helvetica, Arial, sans-serif;
+  background-color: #bfbfbf;
+  color: #000000;
+}
+
 .iconbar {
   height: 100%;
   width: 50px;
@@ -19,7 +27,7 @@
   /* Add some padding */
   transition: all 0.3s ease;
   /* Add transition for hover effects */
-  color: white;
+  color: #ffffff;
   /* White text color */
   font-size: 32px;
   /* Increased font-size */
@@ -30,25 +38,30 @@
   /* Add a hover color */
 }
 
-.ibactive {
-  background-color: #203794;
+.ib_menu {
+  background-color: #0055ff80;
+  /* Add an active/current color */
+}
+
+.ib_bt {
+  background-color: #4d4d4d;
   /* Add an active/current color */
 }
 
 .sidenav {
-  height: 97%;
-  /* Avoids a vertical scrollbar (for some reason) */
+  height: calc(100% - 15px);
   width: 160px;
   margin-left: 50px;
   /* Same as IconBar */
-  position: absolute;
-  z-index: 1;
+  position: fixed;
+  z-index: 10;
   top: 0;
+  bottom: 0;
   left: 0;
   background-color: #474747;
   overflow-x: auto;
   /*hidden*/
-  padding-top: 20px;
+  padding-top: 15px;
   transition: .5s;
 }
 
@@ -66,6 +79,41 @@
 
 .sidenav p:hover {
   color: #b8b8b8;
+}
+
+.sidenav a {
+  font-size: 18px;
+}
+
+/*Sidebar context menu*/
+.sidebarCxtMenu {
+  z-index: 100;
+  position: fixed;
+  text-align: center;
+  background: #474747;
+  border: 1px solid #505050;
+  font-size: 12px;
+}
+
+.sidebarCxtMenu ul {
+  padding: 0px;
+  margin: 0px;
+  min-width: 150px;
+  list-style: none;
+}
+
+.sidebarCxtMenu ul li {
+  padding-bottom: 7px;
+  padding-top: 7px;
+}
+
+.sidebarCxtMenu ul li a {
+  text-decoration: none;
+  color: #d2d2d2;
+}
+
+.sidebarCxtMenu ul li:hover {
+  background: #a9a9a9;
 }
 
 /* Style the buttons that are used to open and close the accordion panel */
@@ -131,7 +179,7 @@
 }
 
 .data_tab {
-  height: 20px;
+  height: 15px;
   width: calc(100% - 160px - 50px - 10px * 2);
   /* - Sidebar - IconBar - Padding */
   position: fixed;
@@ -164,56 +212,54 @@
   height: 200px;
 }
 
-.discrete_button {
-  border: 0px none rgba(0, 0, 0, 0);
-  background-color: rgba(0, 0, 0, 0.01);
-}
-
-body {
-  overflow-x: hidden;
-  /*hidden*/
-  font-family: Helvetica, Arial, sans-serif;
-  background-color: #bfbfbf;
-  color: #000000;
-}
-
-@media screen and (max-height: 450px) {
-  .sidenav {
-    padding-top: 15px;
-  }
-
-  .sidenav a {
-    font-size: 18px;
-  }
-}
-
-/*Sidebar context menu*/
-.sidebarCxtMenu {
-  z-index: 100;
-  position: absolute;
+.graph_format {
   text-align: center;
-  background: lightgray;
-  border: 1px solid black;
+  margin-left: 5%;
+  margin-right: 5%;
+  width: 90%;
+  height: 250px;
 }
 
-.sidebarCxtMenu ul {
-  padding: 0px;
-  margin: 0px;
-  min-width: 150px;
-  list-style: none;
+.graph_format_legend {
+  text-align: center;
+  margin-left: 5%;
+  margin-right: 5%;
+  width: 90%;
+  height: 300px;
 }
 
-.sidebarCxtMenu ul li {
-  padding-bottom: 7px;
-  padding-top: 7px;
-  border: 1px solid black;
+.discrete_button {
+  border: 0px none #00000000;
+  background-color: #00000000;
 }
 
-.sidebarCxtMenu ul li a {
-  text-decoration: none;
-  color: black;
+.generic_button {
+  border: 0px none #00000000;
+  background-color: #474747;
+  color: #c5c5c5;
+  box-shadow: none;
 }
 
-.sidebarCxtMenu ul li:hover {
-  background: darkgray;
+.generic_button:hover {
+  border: 0px none #00000000;
+  background-color: #505050;
+  color: #c5c5c5;
+  box-shadow: none;
+}
+
+.generic_chkbox {
+  background: #474747;
+  color: #205fac;
+}
+
+.generic_slider {
+  color: #205fac;
+}
+
+.generic_radio {
+  color: #205fac;
+}
+
+.generic_box {
+  outline: none;
 }

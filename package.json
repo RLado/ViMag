@@ -1,9 +1,11 @@
 {
   "name": "vibrolab",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A video vibration toolbox",
   "main": "main.js",
   "scripts": {
+    "dev_setup": "npm install && bash ./build_scripts/linux_x86_64.sh",
+    "dev_win_setup": "npm install && call ./build_scripts/windows_x86_64.bat && call ./build_scripts/windows_x86_64.bat",
     "start": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make"
@@ -26,46 +28,19 @@
   "homepage": "https://github.com/RLado/Vibrolab#readme",
   "devDependencies": {
     "@electron-forge/cli": "^6.0.0-beta.64",
-    "@electron-forge/maker-deb": "^6.0.0-beta.64",
-    "@electron-forge/maker-rpm": "^6.0.0-beta.64",
+    "@electron-forge/maker-flatpak": "^6.0.0-beta.65",
     "@electron-forge/maker-squirrel": "^6.0.0-beta.64",
     "@electron-forge/maker-zip": "^6.0.0-beta.64",
-    "electron": "^19.0.8"
+    "electron": "^19.0.8",
+    "fs-extra": "^10.1.0"
   },
   "dependencies": {
     "chart.js": "^3.8.0",
     "csvtojson": "^2.0.10",
-    "dialogs": "^2.0.1",
-    "electron-squirrel-startup": "^1.0.0",
-    "get-video-dimensions": "^1.0.0",
-    "image-size": "^1.0.2",
+    "dialogs": "git://github.com/RLado/dialogs_js.git",
     "python-shell": "^3.0.1"
   },
   "config": {
-    "forge": {
-      "packagerConfig": {},
-      "makers": [
-        {
-          "name": "@electron-forge/maker-squirrel",
-          "config": {
-            "name": "vibrolab"
-          }
-        },
-        {
-          "name": "@electron-forge/maker-zip",
-          "platforms": [
-            "darwin"
-          ]
-        },
-        {
-          "name": "@electron-forge/maker-deb",
-          "config": {}
-        },
-        {
-          "name": "@electron-forge/maker-rpm",
-          "config": {}
-        }
-      ]
-    }
+    "forge": "./forge.config.js"
   }
 }
