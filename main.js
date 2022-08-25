@@ -30,6 +30,9 @@ fs.writeFile(path.join(process.cwd(), 'python/interpreter/vibrolab_venv/pyvenv.c
 });
 console.log('Done');
 
+// Add application icon
+app.getFileIcon('./img/icon.ico');
+
 // Define main window
 const createWindow = () => {
     const win = new BrowserWindow({
