@@ -1,7 +1,10 @@
 const fse = require('fs-extra');
 
 module.exports = {
-    packagerConfig: {},
+    packagerConfig: {
+        icon: './img/icon.ico',
+        appCopyright: 'Copyright (c) 2022 Ricard Lado',
+    },
     electronRebuildConfig: {},
     makers: [
         {
