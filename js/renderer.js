@@ -12,7 +12,7 @@ const csvtojson = require("csvtojson");
 
 
 // Functions -------------------------------------------------------------------
-function python_test(args) {
+function pythonTest(args) {
     console.log('Testing python')
     let options = {
         pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
@@ -36,110 +36,110 @@ function getPromiseFromEvent(item, event) {
 
 // Get click position inside the video element in order to create a slice
 function setPtSlice(e) {
-    let video_coords = video.getBoundingClientRect();
-    let xPosition = e.clientX - video_coords.left;
-    let yPosition = e.clientY - video_coords.top;
-    if (temp_slice_pt_start[0] == -1 && temp_slice_pt_start[1] == -1) { // First point
-        temp_slice_pt_start = [xPosition / video_coords.width, yPosition / video_coords.height];
-        console.log(`First slice pt: ${temp_slice_pt_start}`);
+    let videoCoords = video.getBoundingClientRect();
+    let xPosition = e.clientX - videoCoords.left;
+    let yPosition = e.clientY - videoCoords.top;
+    if (tempSlicePtStart[0] == -1 && tempSlicePtStart[1] == -1) { // First point
+        tempSlicePtStart = [xPosition / videoCoords.width, yPosition / videoCoords.height];
+        console.log(`First slice pt: ${tempSlicePtStart}`);
     }
     else { // Second point
-        temp_slice_pt_stop = [xPosition / video_coords.width, yPosition / video_coords.height];
+        tempSlicePtStop = [xPosition / videoCoords.width, yPosition / videoCoords.height];
 
         // Add new slice to the project
-        let target = find_data_by_name(vid_id_disp);
-        prj.items[target[0]].items.push(new slice(`slice_${prj.name_num_count}`, [temp_slice_pt_start, temp_slice_pt_stop], false));
-        prj.name_num_count++;
+        let target = findDataByName(vidIdDisp);
+        prj.items[target[0]].items.push(new slice(`slice_${prj.nameNumCount}`, [tempSlicePtStart, tempSlicePtStop], false));
+        prj.nameNumCount++;
 
         // Set project.saved to false
         prj.saved = false;
 
         // Reset
-        console.log(`Second slice pt: ${temp_slice_pt_stop}`);
-        temp_slice_pt_start = [-1, -1];
-        temp_slice_pt_stop = [-1, -1];
+        console.log(`Second slice pt: ${tempSlicePtStop}`);
+        tempSlicePtStart = [-1, -1];
+        tempSlicePtStop = [-1, -1];
 
         // Update interface
-        draw_slices();
-        update_accordions();
+        drawSlices();
+        updateAccordions();
     }
-    // alert('pos x:' + xPosition + '/' + video_coords.width + ' pos y: ' + yPosition + '/' + video_coords.height);
+    // alert('pos x:' + xPosition + '/' + videoCoords.width + ' pos y: ' + yPosition + '/' + videoCoords.height);
 }
 
 // Draw video slices
-function draw_slices() {
-    if (vid_id_disp != '') {
-        let target = find_data_by_name(vid_id_disp);
-        var video_coords = video.getBoundingClientRect(); // Access values as height and width
+function drawSlices() {
+    if (vidIdDisp != '') {
+        let target = findDataByName(vidIdDisp);
+        var videoCoords = video.getBoundingClientRect(); // Access values as height and width
 
         // Get canvas element
-        let cnvas = document.getElementById('video_canvas');
+        let cnvas = document.getElementById('videoCanvas');
         let ctx = cnvas.getContext('2d');
 
         // Move/Resize canvas
-        cnvas.style.left = video_coords.x + 'px';
-        cnvas.width = video_coords.width;
-        cnvas.height = video_coords.height;
+        cnvas.style.left = videoCoords.x + 'px';
+        cnvas.width = videoCoords.width;
+        cnvas.height = videoCoords.height;
 
         console.log('Drawing slices');
         for (let i = 0; i < prj.items[target[0]].items.length; i++) {
             ctx.beginPath();
             ctx.lineWidth = "2";
             ctx.strokeStyle = "red";
-            ctx.moveTo(prj.items[target[0]].items[i].coord[0][0] * video_coords.width, prj.items[target[0]].items[i].coord[0][1] * video_coords.height);
-            ctx.lineTo(prj.items[target[0]].items[i].coord[1][0] * video_coords.width, prj.items[target[0]].items[i].coord[1][1] * video_coords.height);
+            ctx.moveTo(prj.items[target[0]].items[i].coord[0][0] * videoCoords.width, prj.items[target[0]].items[i].coord[0][1] * videoCoords.height);
+            ctx.lineTo(prj.items[target[0]].items[i].coord[1][0] * videoCoords.width, prj.items[target[0]].items[i].coord[1][1] * videoCoords.height);
             ctx.stroke();
         }
     }
 }
 
 // Toggle slicing mode
-function toggle_slice_mode() {
-    draw_slices(); // Resize video canvas
-    let vcnvas = document.getElementById("video_canvas"); // Get video canvas
+function toggleSliceMode() {
+    drawSlices(); // Resize video canvas
+    let vcnvas = document.getElementById("videoCanvas"); // Get video canvas
 
-    if (vid_id_disp != '') {
-        slice_state = !slice_state; // Change state
-        video.controls = !slice_state; // If not slicing show controls
+    if (vidIdDisp != '') {
+        sliceState = !sliceState; // Change state
+        video.controls = !sliceState; // If not slicing show controls
 
-        if (slice_state) {
-            console.log(`Slice mode activated on ${vid_id_disp}`);
+        if (sliceState) {
+            console.log(`Slice mode activated on ${vidIdDisp}`);
 
             document.getElementById("play-pause").style.visibility = "visible";
             vcnvas.style.visibility = "visible";
-            window.addEventListener("resize", draw_slices, false);
+            window.addEventListener("resize", drawSlices, false);
             vcnvas.addEventListener("click", setPtSlice, false);
         }
         else {
             document.getElementById("play-pause").style.visibility = "hidden";
             vcnvas.style.visibility = "hidden";
-            window.removeEventListener("resize", draw_slices);
+            window.removeEventListener("resize", drawSlices);
             vcnvas.removeEventListener('click', setPtSlice);
         }
     }
     else {
-        slice_state = false;
-        video.controls = !slice_state; // If not slicing show controls
+        sliceState = false;
+        video.controls = !sliceState; // If not slicing show controls
 
         // Hide slice mode
         document.getElementById("play-pause").style.visibility = "hidden";
         vcnvas.style.visibility = "hidden";
-        window.removeEventListener("resize", draw_slices);
+        window.removeEventListener("resize", drawSlices);
         vcnvas.removeEventListener('click', setPtSlice);
     }
 }
 
 
 // Proceses the slices through the python pipeline
-async function process_slices() {
+async function processSlices() {
     if (!prj.saved && prj.path == null) {
         alert("The project must be saved before processing");
-        ipcRenderer.send('save_as', null);
+        ipcRenderer.send('saveAs', null);
         return null;
     }
     // Spin the icon to indicate it's working and disable functonality
-    document.getElementById("process_slices_btn").innerHTML = '<i class="fa fa-sm fa-cog fa-spin"></i>';
-    document.getElementById("process_slices_btn").onclick = null;
+    document.getElementById("processSlicesBtn").innerHTML = '<i class="fa fa-sm fa-cog fa-spin"></i>';
+    document.getElementById("processSlicesBtn").onclick = null;
 
     // Do the processing
     for (let i = 0; i < prj.items.length; i++) { // Level 1
@@ -149,9 +149,9 @@ async function process_slices() {
                 console.log(prj.items[i].items[j].coord);
 
                 // Correct coords with original resolution
-                show_vid(prj.items[i].name, prj.items[i].path);
+                showVid(prj.items[i].name, prj.items[i].path);
                 await getPromiseFromEvent(video, 'loadedmetadata');
-                prj.items[i].items[j].true_coord = [[
+                prj.items[i].items[j].trueCoord = [[
                     prj.items[i].items[j].coord[0][0] * video.videoWidth,
                     prj.items[i].items[j].coord[0][1] * video.videoHeight,
                 ],
@@ -162,7 +162,7 @@ async function process_slices() {
                 ];
 
                 // Calculate slice square coord + dim
-                function slice2patch64(X) { // Xmin,Xmax => Xmin_new,Xmax_new (Only on one dimension)
+                function slice2patch64(X) { // Xmin,Xmax => XminNew,XmaxNew (Only on one dimension)
                     let W = X[1] - X[0];
 
                     if (W % 64 === 0 && W != 0) {
@@ -173,11 +173,11 @@ async function process_slices() {
                     }
                     else {
                         let nlen = 64 * Math.abs(Math.floor(W / 64) + 1);
-                        let mid_pt = (X[1] + X[0]) / 2;
+                        let midPt = (X[1] + X[0]) / 2;
 
                         // floor the result because pixels are integers
-                        X[0] = Math.floor(mid_pt - nlen / 2);
-                        X[1] = Math.floor(mid_pt + nlen / 2);
+                        X[0] = Math.floor(midPt - nlen / 2);
+                        X[1] = Math.floor(midPt + nlen / 2);
 
                         return X;
                     }
@@ -187,58 +187,58 @@ async function process_slices() {
                 let X = [0, 0];
                 let Y = [0, 0];
 
-                if (prj.items[i].items[j].true_coord[0][0] < prj.items[i].items[j].true_coord[1][0]) {
-                    X = [prj.items[i].items[j].true_coord[0][0], prj.items[i].items[j].true_coord[1][0]];
+                if (prj.items[i].items[j].trueCoord[0][0] < prj.items[i].items[j].trueCoord[1][0]) {
+                    X = [prj.items[i].items[j].trueCoord[0][0], prj.items[i].items[j].trueCoord[1][0]];
                 }
                 else {
-                    X = [prj.items[i].items[j].true_coord[1][0], prj.items[i].items[j].true_coord[0][0]];
+                    X = [prj.items[i].items[j].trueCoord[1][0], prj.items[i].items[j].trueCoord[0][0]];
                 }
 
-                if (prj.items[i].items[j].true_coord[0][1] < prj.items[i].items[j].true_coord[1][1]) {
-                    Y = [prj.items[i].items[j].true_coord[0][1], prj.items[i].items[j].true_coord[1][1]];
+                if (prj.items[i].items[j].trueCoord[0][1] < prj.items[i].items[j].trueCoord[1][1]) {
+                    Y = [prj.items[i].items[j].trueCoord[0][1], prj.items[i].items[j].trueCoord[1][1]];
                 }
                 else {
-                    Y = [prj.items[i].items[j].true_coord[1][1], prj.items[i].items[j].true_coord[0][1]];
+                    Y = [prj.items[i].items[j].trueCoord[1][1], prj.items[i].items[j].trueCoord[0][1]];
                 }
-                //console.log({corrected_coord});
+                //console.log({correctedCoord});
 
                 // --Now calculate the square
                 X = slice2patch64(X);
                 Y = slice2patch64(Y);
 
                 // --So... coord and dim are...
-                prj.items[i].items[j].win_coord = [X[0], Y[0]];
-                prj.items[i].items[j].win_dim = [X[1] - X[0], Y[1] - Y[0]]; // W,H
+                prj.items[i].items[j].winCoord = [X[0], Y[0]];
+                prj.items[i].items[j].winDim = [X[1] - X[0], Y[1] - Y[0]]; // W,H
 
 
                 // Set data destination
-                prj.items[i].items[j].path_original = path.join(prj.data, prj.items[i].items[j].name + '_original');
-                prj.items[i].items[j].path_vmm = path.join(prj.data, prj.items[i].items[j].name + '_vmm');
-                prj.items[i].items[j].path_slice = path.join(prj.data, prj.items[i].items[j].name + '_slice');
+                prj.items[i].items[j].pathOriginal = path.join(prj.data, prj.items[i].items[j].name + 'Original');
+                prj.items[i].items[j].pathVmm = path.join(prj.data, prj.items[i].items[j].name + 'Vmm');
+                prj.items[i].items[j].pathSlice = path.join(prj.data, prj.items[i].items[j].name + 'Slice');
 
                 // Run python code
                 // Split video into frames
-                let original_stats;
+                let originalStats;
                 let options = {
                     pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
                     args: [
                         '-i', prj.items[i].path,
-                        '-o', prj.items[i].items[j].path_original,
-                        '-c', prj.items[i].items[j].win_coord[0], prj.items[i].items[j].win_coord[1],
-                        '-d', prj.items[i].items[j].win_dim[0], prj.items[i].items[j].win_dim[1],
+                        '-o', prj.items[i].items[j].pathOriginal,
+                        '-c', prj.items[i].items[j].winCoord[0], prj.items[i].items[j].winCoord[1],
+                        '-d', prj.items[i].items[j].winDim[0], prj.items[i].items[j].winDim[1],
                     ],
                 };
 
                 //console.log({ options });
 
                 await new Promise((resolve, reject) => {
-                    PythonShell.run('python/video2frames.py', options, function (err_v2f, results_v2f) {
-                        if (err_v2f) throw err_v2f; // Error callback
+                    PythonShell.run('python/video2frames.py', options, function (errV2f, resultsV2f) {
+                        if (errV2f) throw errV2f; // Error callback
 
                         // Results callback
-                        console.log('Video crop results: %j', results_v2f);
-                        prj.items[i].framerate = results_v2f[0].split(',')[1];
-                        let nframes = results_v2f[0].split(',')[2];
+                        console.log('Video crop results: %j', resultsV2f);
+                        prj.items[i].framerate = resultsV2f[0].split(',')[1];
+                        let nframes = resultsV2f[0].split(',')[2];
                         nframes = nframes.slice(0, nframes.length - 1) - 1;
 
                         // Magnify the cut video results
@@ -246,8 +246,8 @@ async function process_slices() {
                             pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
                             args: [
                                 '--load_ckpt', './python/STB-VMM/ckpt/ckpt_e49.pth.tar',
-                                '--save_dir', prj.items[i].items[j].path_vmm,
-                                '--video_path', path.join(prj.items[i].items[j].path_original, 'frame'),
+                                '--save_dir', prj.items[i].items[j].pathVmm,
+                                '--video_path', path.join(prj.items[i].items[j].pathOriginal, 'frame'),
                                 '--num_data', nframes,
                                 '--mode', 'static',
                                 '-j', 1,
@@ -259,42 +259,42 @@ async function process_slices() {
 
                         //console.log({ options });
 
-                        PythonShell.run('python/STB-VMM/run.py', options, function (err_STB, results_STB) {
-                            if (err_STB) throw err_STB; // Error callback
+                        PythonShell.run('python/STB-VMM/run.py', options, function (errSTB, resultsSTB) {
+                            if (errSTB) throw errSTB; // Error callback
 
                             // Results callback
-                            //console.log({ results_STB });
+                            //console.log({ resultsSTB });
 
                             // Run slicing
                             // --Correct global coordinates to magnified window
-                            let slice_start_coord = [
-                                Math.round(prj.items[i].items[j].true_coord[0][0] - prj.items[i].items[j].win_coord[0]),
-                                Math.round(prj.items[i].items[j].true_coord[0][1] - prj.items[i].items[j].win_coord[1]),
+                            let sliceStartCoord = [
+                                Math.round(prj.items[i].items[j].trueCoord[0][0] - prj.items[i].items[j].winCoord[0]),
+                                Math.round(prj.items[i].items[j].trueCoord[0][1] - prj.items[i].items[j].winCoord[1]),
                             ];
-                            let slice_end_coord = [
-                                Math.round(prj.items[i].items[j].true_coord[1][0] - prj.items[i].items[j].win_coord[0]),
-                                Math.round(prj.items[i].items[j].true_coord[1][1] - prj.items[i].items[j].win_coord[1]),
+                            let sliceEndCoord = [
+                                Math.round(prj.items[i].items[j].trueCoord[1][0] - prj.items[i].items[j].winCoord[0]),
+                                Math.round(prj.items[i].items[j].trueCoord[1][1] - prj.items[i].items[j].winCoord[1]),
                             ];
 
                             // --Run python slicer
-                            let slice_files = fs.readdirSync(prj.items[i].items[j].path_vmm);
-                            for (let l = 0; l < slice_files.length; l++) {
-                                slice_files[l] = path.join(prj.items[i].items[j].path_vmm, slice_files[l]);
+                            let sliceFiles = fs.readdirSync(prj.items[i].items[j].pathVmm);
+                            for (let l = 0; l < sliceFiles.length; l++) {
+                                sliceFiles[l] = path.join(prj.items[i].items[j].pathVmm, sliceFiles[l]);
                             }
-                            //console.log({ slice_files });
+                            //console.log({ sliceFiles });
 
                             options = {
                                 pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
                                 args: [
-                                    '-s', slice_start_coord[0], slice_start_coord[1],
-                                    '-e', slice_end_coord[0], slice_end_coord[1],
-                                    '-o', prj.items[i].items[j].path_slice,
+                                    '-s', sliceStartCoord[0], sliceStartCoord[1],
+                                    '-e', sliceEndCoord[0], sliceEndCoord[1],
+                                    '-o', prj.items[i].items[j].pathSlice,
                                     '-i',
-                                ].concat(slice_files),
+                                ].concat(sliceFiles),
                             };
 
-                            PythonShell.run('python/TempSlice/tempslice.py', options, function (err_slice, results_slice) {
-                                if (err_slice) throw err_slice; // Error callback
+                            PythonShell.run('python/TempSlice/tempslice.py', options, function (errSlice, resultsSlice) {
+                                if (errSlice) throw errSlice; // Error callback
 
                                 // Results callback
                                 console.log(`Slice for ${prj.items[i].items[j].name} completed`);
@@ -302,8 +302,8 @@ async function process_slices() {
                                 // Flag as processed
                                 prj.items[i].items[j].processed = true;
 
-                                // Update data_tab
-                                update_data_tab();
+                                // Update dataTab
+                                updateDataTab();
 
                                 // Resolve promise
                                 resolve({ success: true });
@@ -318,42 +318,42 @@ async function process_slices() {
         }
     }
     // Stop the spinning icon and restore functionality
-    document.getElementById("process_slices_btn").innerHTML = '<i class="fa fa-sm fa-cog"></i>';
-    document.getElementById("process_slices_btn").onclick = function () { process_slices(); };
+    document.getElementById("processSlicesBtn").innerHTML = '<i class="fa fa-sm fa-cog"></i>';
+    document.getElementById("processSlicesBtn").onclick = function () { processSlices(); };
 }
 
 // Populate data tab
-function update_data_tab() {
-    let data_tab_contents = document.getElementById('data_tab_contents');
-    data_tab_contents.innerHTML = '';
+function updateDataTab() {
+    let dataTabContents = document.getElementById('dataTabContents');
+    dataTabContents.innerHTML = '';
 
     // HTML generation
     for (let i = 0; i < prj.items.length; i++) { // Level 1
         for (let j = 0; j < prj.items[i].items.length; j++) { // Level 2
             if (prj.items[i].items[j].type == 'slice' && prj.items[i].items[j].processed) {
                 //console.log(prj.items[i].path);
-                //console.log(prj.items[i].items[j].path_slice);
+                //console.log(prj.items[i].items[j].pathSlice);
 
                 // Add sliders and image
-                data_tab_contents.innerHTML += `
+                dataTabContents.innerHTML += `
                     <hr color=#a6a6a6>
                     <h3>${prj.items[i].items[j].name}</h3>
 
                     <p>
-                        <input type="checkbox" id="${prj.items[i].items[j].name}_chkbx" class="generic_chkbox">
-                        <label for="${prj.items[i].items[j].name}_chkbx"> B/W threshold </label>
-                        <input id="${prj.items[i].items[j].name}_bw_range_slider" class="generic_slider" type="range" min="0" max="255" value="128" oninput="${prj.items[i].items[j].name}_bw_range_slider_box.value=${prj.items[i].items[j].name}_bw_range_slider.value">
-                        <input id="${prj.items[i].items[j].name}_bw_range_slider_box" class="generic_box" type="number" min="0" max="255" value="128" oninput="${prj.items[i].items[j].name}_bw_range_slider.value=${prj.items[i].items[j].name}_bw_range_slider_box.value">
+                        <input type="checkbox" id="${prj.items[i].items[j].name}Chkbx" class="genericChkbox">
+                        <label for="${prj.items[i].items[j].name}Chkbx"> B/W threshold </label>
+                        <input id="${prj.items[i].items[j].name}BwRangeSlider" class="genericSlider" type="range" min="0" max="255" value="128" oninput="${prj.items[i].items[j].name}BwRangeSliderBox.value=${prj.items[i].items[j].name}BwRangeSlider.value">
+                        <input id="${prj.items[i].items[j].name}BwRangeSliderBox" class="genericBox" type="number" min="0" max="255" value="128" oninput="${prj.items[i].items[j].name}BwRangeSlider.value=${prj.items[i].items[j].name}BwRangeSliderBox.value">
                     </p>
                     
                     <p>
                         Color threshold: 
-                        <input id="${prj.items[i].items[j].name}_color_range_slider" class="generic_slider" type="range" min="0" max="255" value="15" oninput="${prj.items[i].items[j].name}_color_range_slider_box.value=${prj.items[i].items[j].name}_color_range_slider.value">
-                        <input id="${prj.items[i].items[j].name}_color_range_slider_box" class="generic_box" type="number" min="0" max="255" value="15" oninput="${prj.items[i].items[j].name}_color_range_slider.value=${prj.items[i].items[j].name}_color_range_slider_box.value">
+                        <input id="${prj.items[i].items[j].name}ColorRangeSlider" class="genericSlider" type="range" min="0" max="255" value="15" oninput="${prj.items[i].items[j].name}ColorRangeSliderBox.value=${prj.items[i].items[j].name}ColorRangeSlider.value">
+                        <input id="${prj.items[i].items[j].name}ColorRangeSliderBox" class="genericBox" type="number" min="0" max="255" value="15" oninput="${prj.items[i].items[j].name}ColorRangeSlider.value=${prj.items[i].items[j].name}ColorRangeSliderBox.value">
                     </p>
 
                     <p>
-                        <img id="${prj.items[i].items[j].name}_slice_img" src="${prj.items[i].items[j].path_slice}_slice.png" class="slice_img">
+                        <img id="${prj.items[i].items[j].name}SliceImg" src="${prj.items[i].items[j].pathSlice}_slice.png" class="sliceImg">
                     </p>
                 `;
 
@@ -361,10 +361,10 @@ function update_data_tab() {
                 for (let k = 0; k < prj.items[i].items[j].items.length; k++) { // Level 3
                     if (prj.items[i].items[j].items[k].type == 'signal') { // Signals
                         // Add canvas
-                        data_tab_contents.innerHTML += `
+                        dataTabContents.innerHTML += `
                             <p>Signal:</p>
                             <p>
-                                <canvas id="${prj.items[i].items[j].items[k].name}_chart" class="graph_format_legend"></canvas>
+                                <canvas id="${prj.items[i].items[j].items[k].name}Chart" class="graphFormatLegend"></canvas>
                             </p>
                         `;
 
@@ -372,30 +372,30 @@ function update_data_tab() {
                         csvtojson().fromFile(prj.items[i].items[j].items[k].csv).
                             then((data) => {
                                 //console.log(data);
-                                const data_time = data.map((obj) => obj.time);
-                                const data_ulbp = data.map((obj) => - obj['upper lower band pixel']);
-                                const data_lubp = data.map((obj) => - obj['lower upper band pixel']);
+                                const dataTime = data.map((obj) => obj.time);
+                                const dataUlbp = data.map((obj) => - obj['upper lower band pixel']);
+                                const dataLubp = data.map((obj) => - obj['lower upper band pixel']);
 
                                 // Convert data into the necessary dataset format
-                                let signal_ulbp_plot_data = [];
-                                let signal_lubp_plot_data = [];
-                                for (let n = 0; n < data_time.length; n++) {
-                                    signal_ulbp_plot_data.push({ x: data_time[n], y: data_ulbp[n] });
-                                    signal_lubp_plot_data.push({ x: data_time[n], y: data_lubp[n] });
+                                let signalUlbpPlotData = [];
+                                let signalLubpPlotData = [];
+                                for (let n = 0; n < dataTime.length; n++) {
+                                    signalUlbpPlotData.push({ x: dataTime[n], y: dataUlbp[n] });
+                                    signalLubpPlotData.push({ x: dataTime[n], y: dataLubp[n] });
                                 }
 
-                                new Chart(`${prj.items[i].items[j].items[k].name}_chart`, {
+                                new Chart(`${prj.items[i].items[j].items[k].name}Chart`, {
                                     type: "scatter",
                                     data: {
                                         datasets: [{
                                             label: 'upper lower bound',
-                                            data: signal_ulbp_plot_data,
+                                            data: signalUlbpPlotData,
                                             showLine: true,
                                             borderColor: '#205fac',
                                             fill: false,
                                         }, {
                                             label: 'lower upper bound',
-                                            data: signal_lubp_plot_data,
+                                            data: signalLubpPlotData,
                                             showLine: true,
                                             borderColor: '#474747',
                                             fill: false,
@@ -454,59 +454,59 @@ function update_data_tab() {
                     }
 
                     if (prj.items[i].items[j].items[k].type == 'FFT') { // FFTs
-                        data_tab_contents.innerHTML += `
-                            <p>FFT: <button id="${prj.items[i].items[j].items[k].name}_compute_btn" class="generic_button"> Compute </button></p>
+                        dataTabContents.innerHTML += `
+                            <p>FFT: <button id="${prj.items[i].items[j].items[k].name}ComputeBtn" class="genericButton"> Compute </button></p>
                             <p>
                                 Data: 
-                                <input type="radio" name="${prj.items[i].items[j].items[k].name}_data_col" class="generic_radio" value="avg" id="${prj.items[i].items[j].items[k].name}_radio_avg">
-                                <label for="${prj.items[i].items[j].items[k].name}_radio_avg">avg</label> 
-                                <input type="radio" name="${prj.items[i].items[j].items[k].name}_data_col" class="generic_radio" value="lub" id="${prj.items[i].items[j].items[k].name}_radio_lub">
-                                <label for="${prj.items[i].items[j].items[k].name}_radio_lub">lub</label> 
-                                <input type="radio" name="${prj.items[i].items[j].items[k].name}_data_col" class="generic_radio" value="ulb" id="${prj.items[i].items[j].items[k].name}_radio_ulb" checked>
-                                <label for="${prj.items[i].items[j].items[k].name}_radio_ulb">ulb</label> 
+                                <input type="radio" name="${prj.items[i].items[j].items[k].name}DataCol" class="genericRadio" value="avg" id="${prj.items[i].items[j].items[k].name}RadioAvg">
+                                <label for="${prj.items[i].items[j].items[k].name}RadioAvg">avg</label> 
+                                <input type="radio" name="${prj.items[i].items[j].items[k].name}DataCol" class="genericRadio" value="lub" id="${prj.items[i].items[j].items[k].name}RadioLub">
+                                <label for="${prj.items[i].items[j].items[k].name}RadioLub">lub</label> 
+                                <input type="radio" name="${prj.items[i].items[j].items[k].name}DataCol" class="genericRadio" value="ulb" id="${prj.items[i].items[j].items[k].name}RadioUlb" checked>
+                                <label for="${prj.items[i].items[j].items[k].name}RadioUlb">ulb</label> 
                             </p>
                             <p>
-                                <input type="checkbox" id="${prj.items[i].items[j].items[k].name}_smth_chkbx" class="generic_chkbox">
-                                <label for="${prj.items[i].items[j].items[k].name}_smth_chkbx"> Smooth </label>
-                                <input id="${prj.items[i].items[j].items[k].name}_smth_slider" class="generic_slider" type="range" min="0" max="1" step="0.01" value="0.02" oninput="${prj.items[i].items[j].items[k].name}_smth_slider_box.value=${prj.items[i].items[j].items[k].name}_smth_slider.value">
-                                <input id="${prj.items[i].items[j].items[k].name}_smth_slider_box" class="generic_box" type="number" min="0" max="1" step="0.01" value="0.02" oninput="${prj.items[i].items[j].items[k].name}_smth_slider.value=${prj.items[i].items[j].items[k].name}_smth_slider_box.value">
+                                <input type="checkbox" id="${prj.items[i].items[j].items[k].name}SmthChkbx" class="genericChkbox">
+                                <label for="${prj.items[i].items[j].items[k].name}SmthChkbx"> Smooth </label>
+                                <input id="${prj.items[i].items[j].items[k].name}SmthSlider" class="genericSlider" type="range" min="0" max="1" step="0.01" value="0.02" oninput="${prj.items[i].items[j].items[k].name}SmthSliderBox.value=${prj.items[i].items[j].items[k].name}SmthSlider.value">
+                                <input id="${prj.items[i].items[j].items[k].name}SmthSliderBox" class="genericBox" type="number" min="0" max="1" step="0.01" value="0.02" oninput="${prj.items[i].items[j].items[k].name}SmthSlider.value=${prj.items[i].items[j].items[k].name}SmthSliderBox.value">
                             </p>
                             <p>
-                                <canvas id="${prj.items[i].items[j].items[k].name}_chart" class="graph_format"></canvas>
+                                <canvas id="${prj.items[i].items[j].items[k].name}Chart" class="graphFormat"></canvas>
                             </p>
                             <p>
-                                <!-- y_axis scale: 
-                                <input type="radio" name="${prj.items[i].items[j].items[k].name}_scale" class="generic_radio" value="mag" id="${prj.items[i].items[j].items[k].name}_radio_mag" checked>
-                                <label for="${prj.items[i].items[j].items[k].name}_radio_mag">mag</label> 
-                                <input type="radio" name="${prj.items[i].items[j].items[k].name}_scale" class="generic_radio" value="log" id="${prj.items[i].items[j].items[k].name}_radio_log">
-                                <label for="${prj.items[i].items[j].items[k].name}_radio_log">log</label> -->
+                                <!-- yAxis scale: 
+                                <input type="radio" name="${prj.items[i].items[j].items[k].name}Scale" class="genericRadio" value="mag" id="${prj.items[i].items[j].items[k].name}RadioMag" checked>
+                                <label for="${prj.items[i].items[j].items[k].name}RadioMag">mag</label> 
+                                <input type="radio" name="${prj.items[i].items[j].items[k].name}Scale" class="genericRadio" value="log" id="${prj.items[i].items[j].items[k].name}RadioLog">
+                                <label for="${prj.items[i].items[j].items[k].name}RadioLog">log</label> -->
                                 Crop: 
-                                <input id="${prj.items[i].items[j].items[k].name}_crop_start_box" class="generic_box" type="number" min="0" max="${prj.items[i].framerate / 2}" value="1.5" step="0.1">
-                                <input id="${prj.items[i].items[j].items[k].name}_crop_stop_box" class="generic_box" type="number" min="0" max="${prj.items[i].framerate / 2}" value="${prj.items[i].framerate / 2}" step="0.1">
+                                <input id="${prj.items[i].items[j].items[k].name}CropStartBox" class="genericBox" type="number" min="0" max="${prj.items[i].framerate / 2}" value="1.5" step="0.1">
+                                <input id="${prj.items[i].items[j].items[k].name}CropStopBox" class="genericBox" type="number" min="0" max="${prj.items[i].framerate / 2}" value="${prj.items[i].framerate / 2}" step="0.1">
                             </p>
                         `;
 
                         csvtojson().fromFile(prj.items[i].items[j].items[k].csv).
                             then((data) => {
                                 //console.log(data); // 'freq.', 'real', 'imag', 'mag'
-                                let data_freq = data.map((obj) => obj['freq.']);
-                                let data_real = data.map((obj) => obj['real']);
-                                let data_imag = data.map((obj) => obj['imag']);
-                                let data_mag = data.map((obj) => obj['mag']);
+                                let dataFreq = data.map((obj) => obj['freq.']);
+                                let dataReal = data.map((obj) => obj['real']);
+                                let dataImag = data.map((obj) => obj['imag']);
+                                let dataMag = data.map((obj) => obj['mag']);
 
                                 // Convert data into the necessary dataset format
-                                let FFT_plot_data = [];
-                                for (let n = 0; n < data_freq.length; n++) {
-                                    FFT_plot_data.push({ x: data_freq[n], y: data_mag[n] });
+                                let FFTPlotData = [];
+                                for (let n = 0; n < dataFreq.length; n++) {
+                                    FFTPlotData.push({ x: dataFreq[n], y: dataMag[n] });
                                 }
 
-                                new Chart(`${prj.items[i].items[j].items[k].name}_chart`, {
+                                new Chart(`${prj.items[i].items[j].items[k].name}Chart`, {
                                     type: "scatter",
                                     data: {
                                         datasets: [
                                             {
                                                 label: 'FFT',
-                                                data: FFT_plot_data,
+                                                data: FFTPlotData,
                                                 showLine: true,
                                                 fill: false,
                                                 borderColor: '#205fac',
@@ -577,114 +577,114 @@ function update_data_tab() {
         for (let j = 0; j < prj.items[i].items.length; j++) { // Level 2
             if (prj.items[i].items[j].type == 'slice' && prj.items[i].items[j].processed) {
                 // Image 2 csv click event
-                document.getElementById(`${prj.items[i].items[j].name}_slice_img`).addEventListener('click', function (e) {
-                    select_treshold_pt(e, [i, j]);
+                document.getElementById(`${prj.items[i].items[j].name}SliceImg`).addEventListener('click', function (e) {
+                    selectTresholdPt(e, [i, j]);
                 }, false);
 
                 // BW threshold when click the checkbox
-                document.getElementById(`${prj.items[i].items[j].name}_chkbx`).addEventListener('click', function (e) {
-                    prj.items[i].items[j].bw_checked = document.getElementById(`${prj.items[i].items[j].name}_chkbx`).checked;
-                    bw_threshold([i, j]);
+                document.getElementById(`${prj.items[i].items[j].name}Chkbx`).addEventListener('click', function (e) {
+                    prj.items[i].items[j].bwChecked = document.getElementById(`${prj.items[i].items[j].name}Chkbx`).checked;
+                    bwThreshold([i, j]);
                 }, false);
 
                 // BW threshold on change
-                document.getElementById(`${prj.items[i].items[j].name}_bw_range_slider`).addEventListener('change', function (e) {
-                    prj.items[i].items[j].bw_slider_val = document.getElementById(`${prj.items[i].items[j].name}_bw_range_slider`).value;
-                    bw_threshold([i, j]);
+                document.getElementById(`${prj.items[i].items[j].name}BwRangeSlider`).addEventListener('change', function (e) {
+                    prj.items[i].items[j].bwSliderVal = document.getElementById(`${prj.items[i].items[j].name}BwRangeSlider`).value;
+                    bwThreshold([i, j]);
                 }, false);
-                document.getElementById(`${prj.items[i].items[j].name}_bw_range_slider_box`).addEventListener('change', function (e) {
-                    prj.items[i].items[j].bw_slider_val = document.getElementById(`${prj.items[i].items[j].name}_bw_range_slider_box`).value;
-                    bw_threshold([i, j]);
+                document.getElementById(`${prj.items[i].items[j].name}BwRangeSliderBox`).addEventListener('change', function (e) {
+                    prj.items[i].items[j].bwSliderVal = document.getElementById(`${prj.items[i].items[j].name}BwRangeSliderBox`).value;
+                    bwThreshold([i, j]);
                 }, false);
 
                 // Save color slider value
-                document.getElementById(`${prj.items[i].items[j].name}_color_range_slider`).addEventListener('change', function (e) {
-                    prj.items[i].items[j].color_slider_val = document.getElementById(`${prj.items[i].items[j].name}_color_range_slider`).value;
-                    bw_threshold([i, j]);
+                document.getElementById(`${prj.items[i].items[j].name}ColorRangeSlider`).addEventListener('change', function (e) {
+                    prj.items[i].items[j].colorSliderVal = document.getElementById(`${prj.items[i].items[j].name}ColorRangeSlider`).value;
+                    bwThreshold([i, j]);
                 }, false);
-                document.getElementById(`${prj.items[i].items[j].name}_color_range_slider_box`).addEventListener('change', function () {
-                    prj.items[i].items[j].color_slider_val = document.getElementById(`${prj.items[i].items[j].name}_color_range_slider_box`).value;
-                    bw_threshold([i, j]);
+                document.getElementById(`${prj.items[i].items[j].name}ColorRangeSliderBox`).addEventListener('change', function () {
+                    prj.items[i].items[j].colorSliderVal = document.getElementById(`${prj.items[i].items[j].name}ColorRangeSliderBox`).value;
+                    bwThreshold([i, j]);
                 }, false);
 
 
                 // Restore sliders/UI
                 // --BW checkbox
-                document.getElementById(`${prj.items[i].items[j].name}_chkbx`).checked = prj.items[i].items[j].bw_checked;
-                if (prj.items[i].items[j].bw_checked) {
-                    bw_threshold([i, j]);
+                document.getElementById(`${prj.items[i].items[j].name}Chkbx`).checked = prj.items[i].items[j].bwChecked;
+                if (prj.items[i].items[j].bwChecked) {
+                    bwThreshold([i, j]);
                 }
 
                 // --BW slider
-                document.getElementById(`${prj.items[i].items[j].name}_bw_range_slider`).value = prj.items[i].items[j].bw_slider_val;
-                document.getElementById(`${prj.items[i].items[j].name}_bw_range_slider_box`).value = prj.items[i].items[j].bw_slider_val;
+                document.getElementById(`${prj.items[i].items[j].name}BwRangeSlider`).value = prj.items[i].items[j].bwSliderVal;
+                document.getElementById(`${prj.items[i].items[j].name}BwRangeSliderBox`).value = prj.items[i].items[j].bwSliderVal;
 
 
                 // --Color slider
-                document.getElementById(`${prj.items[i].items[j].name}_color_range_slider`).value = prj.items[i].items[j].color_slider_val;
-                document.getElementById(`${prj.items[i].items[j].name}_color_range_slider_box`).value = prj.items[i].items[j].color_slider_val;
+                document.getElementById(`${prj.items[i].items[j].name}ColorRangeSlider`).value = prj.items[i].items[j].colorSliderVal;
+                document.getElementById(`${prj.items[i].items[j].name}ColorRangeSliderBox`).value = prj.items[i].items[j].colorSliderVal;
 
                 // Refresh image slices
-                bw_threshold([i, j]);
+                bwThreshold([i, j]);
             }
 
             for (let k = 0; k < prj.items[i].items[j].items.length; k++) { // Level 3
                 if (prj.items[i].items[j].items[k].type == 'FFT') {
                     // Compute button
-                    document.getElementById(`${prj.items[i].items[j].items[k].name}_compute_btn`).addEventListener('click', () => {
+                    document.getElementById(`${prj.items[i].items[j].items[k].name}ComputeBtn`).addEventListener('click', () => {
                         signal2fft([i, j, k]);
                     });
 
                     // FFT radio
-                    document.getElementById(`${prj.items[i].items[j].items[k].name}_radio_avg`).addEventListener('change', function (e) {
-                        prj.items[i].items[j].items[k].radio_avg = document.getElementById(`${prj.items[i].items[j].items[k].name}_radio_avg`).checked;
-                        prj.items[i].items[j].items[k].radio_lub = document.getElementById(`${prj.items[i].items[j].items[k].name}_radio_lub`).checked;
-                        prj.items[i].items[j].items[k].radio_ulb = document.getElementById(`${prj.items[i].items[j].items[k].name}_radio_ulb`).checked;
+                    document.getElementById(`${prj.items[i].items[j].items[k].name}RadioAvg`).addEventListener('change', function (e) {
+                        prj.items[i].items[j].items[k].radioAvg = document.getElementById(`${prj.items[i].items[j].items[k].name}RadioAvg`).checked;
+                        prj.items[i].items[j].items[k].radioLub = document.getElementById(`${prj.items[i].items[j].items[k].name}RadioLub`).checked;
+                        prj.items[i].items[j].items[k].radioUlb = document.getElementById(`${prj.items[i].items[j].items[k].name}RadioUlb`).checked;
                     }, false);
-                    document.getElementById(`${prj.items[i].items[j].items[k].name}_radio_lub`).addEventListener('change', function (e) {
-                        prj.items[i].items[j].items[k].radio_avg = document.getElementById(`${prj.items[i].items[j].items[k].name}_radio_avg`).checked;
-                        prj.items[i].items[j].items[k].radio_lub = document.getElementById(`${prj.items[i].items[j].items[k].name}_radio_lub`).checked;
-                        prj.items[i].items[j].items[k].radio_ulb = document.getElementById(`${prj.items[i].items[j].items[k].name}_radio_ulb`).checked;
+                    document.getElementById(`${prj.items[i].items[j].items[k].name}RadioLub`).addEventListener('change', function (e) {
+                        prj.items[i].items[j].items[k].radioAvg = document.getElementById(`${prj.items[i].items[j].items[k].name}RadioAvg`).checked;
+                        prj.items[i].items[j].items[k].radioLub = document.getElementById(`${prj.items[i].items[j].items[k].name}RadioLub`).checked;
+                        prj.items[i].items[j].items[k].radioUlb = document.getElementById(`${prj.items[i].items[j].items[k].name}RadioUlb`).checked;
                     }, false);
-                    document.getElementById(`${prj.items[i].items[j].items[k].name}_radio_ulb`).addEventListener('change', function (e) {
-                        prj.items[i].items[j].items[k].radio_avg = document.getElementById(`${prj.items[i].items[j].items[k].name}_radio_avg`).checked;
-                        prj.items[i].items[j].items[k].radio_lub = document.getElementById(`${prj.items[i].items[j].items[k].name}_radio_lub`).checked;
-                        prj.items[i].items[j].items[k].radio_ulb = document.getElementById(`${prj.items[i].items[j].items[k].name}_radio_ulb`).checked;
+                    document.getElementById(`${prj.items[i].items[j].items[k].name}RadioUlb`).addEventListener('change', function (e) {
+                        prj.items[i].items[j].items[k].radioAvg = document.getElementById(`${prj.items[i].items[j].items[k].name}RadioAvg`).checked;
+                        prj.items[i].items[j].items[k].radioLub = document.getElementById(`${prj.items[i].items[j].items[k].name}RadioLub`).checked;
+                        prj.items[i].items[j].items[k].radioUlb = document.getElementById(`${prj.items[i].items[j].items[k].name}RadioUlb`).checked;
                     }, false);
 
                     // FFT smooth slider
-                    document.getElementById(`${prj.items[i].items[j].items[k].name}_smth_chkbx`).addEventListener('change', function () {
-                        prj.items[i].items[j].items[k].smth_chkbx = document.getElementById(`${prj.items[i].items[j].items[k].name}_smth_chkbx`).checked;
+                    document.getElementById(`${prj.items[i].items[j].items[k].name}SmthChkbx`).addEventListener('change', function () {
+                        prj.items[i].items[j].items[k].smthChkbx = document.getElementById(`${prj.items[i].items[j].items[k].name}SmthChkbx`).checked;
                     }, false);
-                    document.getElementById(`${prj.items[i].items[j].items[k].name}_smth_slider`).addEventListener('change', function () {
-                        prj.items[i].items[j].items[k].smth_slider = document.getElementById(`${prj.items[i].items[j].items[k].name}_smth_slider`).value;
+                    document.getElementById(`${prj.items[i].items[j].items[k].name}SmthSlider`).addEventListener('change', function () {
+                        prj.items[i].items[j].items[k].smthSlider = document.getElementById(`${prj.items[i].items[j].items[k].name}SmthSlider`).value;
                     }, false);
-                    document.getElementById(`${prj.items[i].items[j].items[k].name}_smth_slider_box`).addEventListener('change', function () {
-                        prj.items[i].items[j].items[k].smth_slider_box = document.getElementById(`${prj.items[i].items[j].items[k].name}_smth_slider_box`).value;
+                    document.getElementById(`${prj.items[i].items[j].items[k].name}SmthSliderBox`).addEventListener('change', function () {
+                        prj.items[i].items[j].items[k].smthSliderBox = document.getElementById(`${prj.items[i].items[j].items[k].name}SmthSliderBox`).value;
                     }, false);
 
                     // Crop boxes
-                    document.getElementById(`${prj.items[i].items[j].items[k].name}_crop_start_box`).addEventListener('change', function () {
-                        prj.items[i].items[j].items[k].crop_start_box = document.getElementById(`${prj.items[i].items[j].items[k].name}_crop_start_box`).value;
+                    document.getElementById(`${prj.items[i].items[j].items[k].name}CropStartBox`).addEventListener('change', function () {
+                        prj.items[i].items[j].items[k].cropStartBox = document.getElementById(`${prj.items[i].items[j].items[k].name}CropStartBox`).value;
                     }, false);
-                    document.getElementById(`${prj.items[i].items[j].items[k].name}_crop_stop_box`).addEventListener('change', function () {
-                        prj.items[i].items[j].items[k].crop_stop_box = document.getElementById(`${prj.items[i].items[j].items[k].name}_crop_stop_box`).value;
+                    document.getElementById(`${prj.items[i].items[j].items[k].name}CropStopBox`).addEventListener('change', function () {
+                        prj.items[i].items[j].items[k].cropStopBox = document.getElementById(`${prj.items[i].items[j].items[k].name}CropStopBox`).value;
                     }, false);
 
                     // Restore sliders/UI
                     // Radio
-                    document.getElementById(`${prj.items[i].items[j].items[k].name}_radio_avg`).checked = prj.items[i].items[j].items[k].radio_avg;
-                    document.getElementById(`${prj.items[i].items[j].items[k].name}_radio_lub`).checked = prj.items[i].items[j].items[k].radio_lub;
-                    document.getElementById(`${prj.items[i].items[j].items[k].name}_radio_ulb`).checked = prj.items[i].items[j].items[k].radio_ulb;
+                    document.getElementById(`${prj.items[i].items[j].items[k].name}RadioAvg`).checked = prj.items[i].items[j].items[k].radioAvg;
+                    document.getElementById(`${prj.items[i].items[j].items[k].name}RadioLub`).checked = prj.items[i].items[j].items[k].radioLub;
+                    document.getElementById(`${prj.items[i].items[j].items[k].name}RadioUlb`).checked = prj.items[i].items[j].items[k].radioUlb;
 
                     // FFT smooth slider
-                    document.getElementById(`${prj.items[i].items[j].items[k].name}_smth_chkbx`).checked = prj.items[i].items[j].items[k].smth_chkbx;
-                    document.getElementById(`${prj.items[i].items[j].items[k].name}_smth_slider`).value = prj.items[i].items[j].items[k].smth_slider;
-                    document.getElementById(`${prj.items[i].items[j].items[k].name}_smth_slider_box`).value = prj.items[i].items[j].items[k].smth_slider_box;
+                    document.getElementById(`${prj.items[i].items[j].items[k].name}SmthChkbx`).checked = prj.items[i].items[j].items[k].smthChkbx;
+                    document.getElementById(`${prj.items[i].items[j].items[k].name}SmthSlider`).value = prj.items[i].items[j].items[k].smthSlider;
+                    document.getElementById(`${prj.items[i].items[j].items[k].name}SmthSliderBox`).value = prj.items[i].items[j].items[k].smthSliderBox;
 
                     // Crop boxes
-                    document.getElementById(`${prj.items[i].items[j].items[k].name}_crop_start_box`).value = prj.items[i].items[j].items[k].crop_start_box;
-                    document.getElementById(`${prj.items[i].items[j].items[k].name}_crop_stop_box`).value = prj.items[i].items[j].items[k].crop_stop_box;
+                    document.getElementById(`${prj.items[i].items[j].items[k].name}CropStartBox`).value = prj.items[i].items[j].items[k].cropStartBox;
+                    document.getElementById(`${prj.items[i].items[j].items[k].name}CropStopBox`).value = prj.items[i].items[j].items[k].cropStopBox;
                 }
 
             }
@@ -693,60 +693,60 @@ function update_data_tab() {
 
     // Functions:
     // Add click tracking to image element and run slice2csv
-    function select_treshold_pt(e, elem) { // e -> event_elem; elem -> [i,j] elements on prj
-        let img = document.getElementById(`${prj.items[elem[0]].items[elem[1]].name}_slice_img`);
+    function selectTresholdPt(e, elem) { // e -> eventElem; elem -> [i,j] elements on prj
+        let img = document.getElementById(`${prj.items[elem[0]].items[elem[1]].name}SliceImg`);
 
-        let img_coords = img.getBoundingClientRect();
-        let xPosition = e.clientX - img_coords.left;
-        let yPosition = e.clientY - img_coords.top;
-        if (prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up[0] == -1 && prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up[1] == -1) { // First point
-            prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up = [xPosition / img_coords.width, yPosition / img_coords.height];
+        let imgCoords = img.getBoundingClientRect();
+        let xPosition = e.clientX - imgCoords.left;
+        let yPosition = e.clientY - imgCoords.top;
+        if (prj.items[elem[0]].items[elem[1]].ptColorThrhdUp[0] == -1 && prj.items[elem[0]].items[elem[1]].ptColorThrhdUp[1] == -1) { // First point
+            prj.items[elem[0]].items[elem[1]].ptColorThrhdUp = [xPosition / imgCoords.width, yPosition / imgCoords.height];
         }
         else { // Second point
-            prj.items[elem[0]].items[elem[1]].pt_color_thrhd_low = [xPosition / img_coords.width, yPosition / img_coords.height];
+            prj.items[elem[0]].items[elem[1]].ptColorThrhdLow = [xPosition / imgCoords.width, yPosition / imgCoords.height];
 
             // Correct coordinates
-            prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up = [ // Use floor() instead of round() to avoid out of range
-                Math.floor(prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up[0] * img.naturalWidth),
-                Math.floor(prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up[0] * img.naturalHeight),
+            prj.items[elem[0]].items[elem[1]].ptColorThrhdUp = [ // Use floor() instead of round() to avoid out of range
+                Math.floor(prj.items[elem[0]].items[elem[1]].ptColorThrhdUp[0] * img.naturalWidth),
+                Math.floor(prj.items[elem[0]].items[elem[1]].ptColorThrhdUp[0] * img.naturalHeight),
             ];
-            prj.items[elem[0]].items[elem[1]].pt_color_thrhd_low = [
-                Math.floor(prj.items[elem[0]].items[elem[1]].pt_color_thrhd_low[0] * img.naturalWidth),
-                Math.floor(prj.items[elem[0]].items[elem[1]].pt_color_thrhd_low[1] * img.naturalHeight),
+            prj.items[elem[0]].items[elem[1]].ptColorThrhdLow = [
+                Math.floor(prj.items[elem[0]].items[elem[1]].ptColorThrhdLow[0] * img.naturalWidth),
+                Math.floor(prj.items[elem[0]].items[elem[1]].ptColorThrhdLow[1] * img.naturalHeight),
             ];
 
             // Run slice2csv
-            let bw_img;
+            let bwImg;
 
-            if (document.getElementById(`${prj.items[elem[0]].items[elem[1]].name}_chkbx`).checked) {
-                bw_img = `${prj.items[elem[0]].items[elem[1]].path_slice}_slice_bw.png`;
+            if (document.getElementById(`${prj.items[elem[0]].items[elem[1]].name}Chkbx`).checked) {
+                bwImg = `${prj.items[elem[0]].items[elem[1]].pathSlice}_slice_bw.png`;
             }
             else {
-                bw_img = `${prj.items[elem[0]].items[elem[1]].path_slice}_slice.png`;
+                bwImg = `${prj.items[elem[0]].items[elem[1]].pathSlice}_slice.png`;
             }
 
             // Initialize new signal & fft object (if needed)
             // Check if new signals or FFTs are needed
-            let has_signal = false;
-            let has_fft = false;
+            let hasSignal = false;
+            let hasFft = false;
             for (let i = 0; i < prj.items[elem[0]].items[elem[1]].items.length; i++) {
                 if (prj.items[elem[0]].items[elem[1]].items[i].type == 'signal') {
-                    has_signal = true;
+                    hasSignal = true;
                 }
                 if (prj.items[elem[0]].items[elem[1]].items[i].type == 'FFT') {
-                    has_fft = true;
+                    hasFft = true;
                 }
             }
-            if (!has_signal) {
+            if (!hasSignal) {
                 // Add new signal object
-                prj.items[elem[0]].items[elem[1]].items.push(new signal(`${prj.items[elem[0]].items[elem[1]].name}_signal`, `${bw_img}.csv`));
+                prj.items[elem[0]].items[elem[1]].items.push(new signal(`${prj.items[elem[0]].items[elem[1]].name}Signal`, `${bwImg}.csv`));
 
                 // Set project.saved to false
                 prj.saved = false;
             }
-            if (!has_fft) {
+            if (!hasFft) {
                 // Add new FFT object
-                prj.items[elem[0]].items[elem[1]].items.push(new FFT(`${prj.items[elem[0]].items[elem[1]].name}_FFT`, `${prj.items[elem[0]].items[elem[1]].items[0].csv}_fft.csv`, crop_stop_box = prj.items[elem[0]].framerate / 2));
+                prj.items[elem[0]].items[elem[1]].items.push(new FFT(`${prj.items[elem[0]].items[elem[1]].name}_FFT`, `${prj.items[elem[0]].items[elem[1]].items[0].csv}_fft.csv`, cropStopBox = prj.items[elem[0]].framerate / 2));
 
                 // Set project.saved to false
                 prj.saved = false;
@@ -755,69 +755,69 @@ function update_data_tab() {
             let options = {
                 pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
                 args: [
-                    '-u', prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up[0], prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up[1],
-                    '-l', prj.items[elem[0]].items[elem[1]].pt_color_thrhd_low[0], prj.items[elem[0]].items[elem[1]].pt_color_thrhd_low[1],
-                    '-t', document.getElementById(`${prj.items[elem[0]].items[elem[1]].name}_color_range_slider_box`).value,
-                    '-i', bw_img,
+                    '-u', prj.items[elem[0]].items[elem[1]].ptColorThrhdUp[0], prj.items[elem[0]].items[elem[1]].ptColorThrhdUp[1],
+                    '-l', prj.items[elem[0]].items[elem[1]].ptColorThrhdLow[0], prj.items[elem[0]].items[elem[1]].ptColorThrhdLow[1],
+                    '-t', document.getElementById(`${prj.items[elem[0]].items[elem[1]].name}ColorRangeSliderBox`).value,
+                    '-i', bwImg,
                     '-o', prj.data,
                 ],
             };
 
-            //console.log({ options });
+            console.log({ options });
 
-            PythonShell.run('python/TempSlice/slice2csv.py', options, function (err_s2csv, results_s2csv) {
-                if (err_s2csv) {
+            PythonShell.run('python/TempSlice/slice2csv.py', options, function (errS2csv, resultsS2csv) {
+                if (errS2csv) {
                     // Reset
-                    prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up = [-1, -1];
-                    prj.items[elem[0]].items[elem[1]].pt_color_thrhd_low = [-1, -1];
+                    prj.items[elem[0]].items[elem[1]].ptColorThrhdUp = [-1, -1];
+                    prj.items[elem[0]].items[elem[1]].ptColorThrhdLow = [-1, -1];
 
                     // Error throw callback
-                    throw err_s2csv;
+                    throw errS2csv;
                 }
 
                 // Results callback
                 console.log(`slice2csv for ${prj.items[elem[0]].items[elem[1]].name} completed`);
 
                 // Reset
-                prj.items[elem[0]].items[elem[1]].pt_color_thrhd_up = [-1, -1];
-                prj.items[elem[0]].items[elem[1]].pt_color_thrhd_low = [-1, -1];
+                prj.items[elem[0]].items[elem[1]].ptColorThrhdUp = [-1, -1];
+                prj.items[elem[0]].items[elem[1]].ptColorThrhdLow = [-1, -1];
 
                 // Update accordions
-                update_accordions();
+                updateAccordions();
 
                 // Refresh image
-                bw_threshold([elem[0], elem[1]]);
+                bwThreshold([elem[0], elem[1]]);
             });
 
         }
     }
 
     // BW threshold image
-    function bw_threshold(elem) { // elem -> [i,j] elements on prj
+    function bwThreshold(elem) { // elem -> [i,j] elements on prj
         const d = new Date(); //This will be used to force an image refresh
 
-        if (document.getElementById(`${prj.items[elem[0]].items[elem[1]].name}_chkbx`).checked) { // BW threshold
+        if (document.getElementById(`${prj.items[elem[0]].items[elem[1]].name}Chkbx`).checked) { // BW threshold
             let options = {
                 pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
                 args: [
-                    '-t', document.getElementById(`${prj.items[elem[0]].items[elem[1]].name}_bw_range_slider_box`).value,
-                    '-i', `${prj.items[elem[0]].items[elem[1]].path_slice}_slice.png`,
-                    '-o', `${prj.items[elem[0]].items[elem[1]].path_slice}_slice_bw.png`,
+                    '-t', document.getElementById(`${prj.items[elem[0]].items[elem[1]].name}BwRangeSliderBox`).value,
+                    '-i', `${prj.items[elem[0]].items[elem[1]].pathSlice}_slice.png`,
+                    '-o', `${prj.items[elem[0]].items[elem[1]].pathSlice}_slice_bw.png`,
                 ],
             };
 
             //console.log({ options })
 
-            PythonShell.run('python/TempSlice/threshold-slice.py', options, function (err_bwthrhd, results_bwthrhd) {
-                if (err_bwthrhd) throw err_bwthrhd; // Error callback
+            PythonShell.run('python/TempSlice/threshold-slice.py', options, function (errBwthrhd, resultsBwthrhd) {
+                if (errBwthrhd) throw errBwthrhd; // Error callback
 
                 // Results callback
-                document.getElementById(`${prj.items[elem[0]].items[elem[1]].name}_slice_img`).src = `${prj.items[elem[0]].items[elem[1]].path_slice}_slice_bw.png?${d.getMilliseconds()}`;
+                document.getElementById(`${prj.items[elem[0]].items[elem[1]].name}SliceImg`).src = `${prj.items[elem[0]].items[elem[1]].pathSlice}_slice_bw.png?${d.getMilliseconds()}`;
 
             });
         }
         else { // If BW checkbox is not checked return to normal color image
-            document.getElementById(`${prj.items[elem[0]].items[elem[1]].name}_slice_img`).src = `${prj.items[elem[0]].items[elem[1]].path_slice}_slice.png?${d.getMilliseconds()}`;
+            document.getElementById(`${prj.items[elem[0]].items[elem[1]].name}SliceImg`).src = `${prj.items[elem[0]].items[elem[1]].pathSlice}_slice.png?${d.getMilliseconds()}`;
         }
 
     }
@@ -828,71 +828,71 @@ function update_data_tab() {
         let options;
 
         // Set crop boxes if empty
-        if (document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_crop_start_box`).value === '') {
-            document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_crop_start_box`).value = 0;
+        if (document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}CropStartBox`).value === '') {
+            document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}CropStartBox`).value = 0;
         }
-        if (document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_crop_stop_box`).value === '') {
-            document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_crop_stop_box`).value = prj.items[elem[0]].framerate / 2;
+        if (document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}CropStopBox`).value === '') {
+            document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}CropStopBox`).value = prj.items[elem[0]].framerate / 2;
         }
 
         // Search for signal component in the item array (generally 0)
-        let signal_index = null;
+        let signalIndex = null;
         for (let i = 0; i < prj.items[elem[0]].items[elem[1]].items.length; i++) {
             if (prj.items[elem[0]].items[elem[1]].items[i].type == 'signal') {
-                signal_index = i;
+                signalIndex = i;
                 break;
             }
         }
-        if (signal_index === null) {
+        if (signalIndex === null) {
             //console.log("No signal found in slice. Could not calculate FFT.");
             alert('No signal found. Could not calculate FFT.');
             return null;
         }
 
-        if (document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_radio_avg`).checked) {
+        if (document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}RadioAvg`).checked) {
             options = {
                 pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
                 args: [
                     '-f', `${prj.items[elem[0]].framerate}`,
-                    '-i', `${prj.items[elem[0]].items[elem[1]].items[signal_index].csv}`,
+                    '-i', `${prj.items[elem[0]].items[elem[1]].items[signalIndex].csv}`,
                     '-o', `${prj.items[elem[0]].items[elem[1]].items[elem[2]].csv}_graph.png`,
                     '-od', `${prj.data}`,
-                    '-c', document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_crop_start_box`).value, document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_crop_stop_box`).value,
+                    '-c', document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}CropStartBox`).value, document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}CropStopBox`).value,
                     '--data_col', 'avg',
                 ],
             };
         }
-        else if (document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_radio_lub`).checked) {
+        else if (document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}RadioLub`).checked) {
             options = {
                 pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
                 args: [
                     '-f', `${prj.items[elem[0]].framerate}`,
-                    '-i', `${prj.items[elem[0]].items[elem[1]].items[signal_index].csv}`,
+                    '-i', `${prj.items[elem[0]].items[elem[1]].items[signalIndex].csv}`,
                     '-o', `${prj.items[elem[0]].items[elem[1]].items[elem[2]].csv}_graph.png`,
                     '-od', `${prj.data}`,
-                    '-c', document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_crop_start_box`).value, document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_crop_stop_box`).value,
+                    '-c', document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}CropStartBox`).value, document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}CropStopBox`).value,
                     '--data_col', 'lub',
                 ],
             };
         }
-        else if (document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_radio_ulb`).checked) {
+        else if (document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}RadioUlb`).checked) {
             options = {
                 pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
                 args: [
                     '-f', `${prj.items[elem[0]].framerate}`,
-                    '-i', `${prj.items[elem[0]].items[elem[1]].items[signal_index].csv}`,
+                    '-i', `${prj.items[elem[0]].items[elem[1]].items[signalIndex].csv}`,
                     '-o', `${prj.items[elem[0]].items[elem[1]].items[elem[2]].csv}_graph.png`,
                     '-od', `${prj.data}`,
-                    '-c', document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_crop_start_box`).value, document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_crop_stop_box`).value,
+                    '-c', document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}CropStartBox`).value, document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}CropStopBox`).value,
                     '--data_col', 'ulb',
                 ],
             };
         }
 
         // Add smooth settings if checked
-        if (document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_smth_chkbx`).checked) {
+        if (document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}SmthChkbx`).checked) {
             options.args = options.args.concat([
-                '--smooth', document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}_smth_slider_box`).value,
+                '--smooth', document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}SmthSliderBox`).value,
             ]);
         }
 
@@ -900,17 +900,17 @@ function update_data_tab() {
         //console.log({ options });
 
 
-        PythonShell.run('python/TempSlice/csv-fft.py', options, function (err_csvfft, results_csvfft) {
-            if (err_csvfft) throw err_csvfft; // Error callback
+        PythonShell.run('python/TempSlice/csv-fft.py', options, function (errCsvfft, resultsCsvfft) {
+            if (errCsvfft) throw errCsvfft; // Error callback
 
             // Results callback
             console.log(`FFT done for: ${prj.items[elem[0]].items[elem[1]].name}`);
 
             // Update accordions
-            update_accordions();
+            updateAccordions();
 
             // Refresh image
-            bw_threshold([elem[0], elem[1]]);
+            bwThreshold([elem[0], elem[1]]);
         });
 
     }
@@ -919,54 +919,54 @@ function update_data_tab() {
 
 // Navigation bar functions
 function toggleNav() {
-    if (togglenav_c) {
+    if (togglenavC) {
         closeNav();
     }
     else {
         openNav();
     }
-    togglenav_c = !togglenav_c;
+    togglenavC = !togglenavC;
 
     // Update UI
-    draw_slices();
-    setTimeout(() => draw_slices(), 500); // wait for resize transition to redraw
+    drawSlices();
+    setTimeout(() => drawSlices(), 500); // wait for resize transition to redraw
 }
 
 function openNav() {
     document.getElementById("Sidebar").style.width = "160px";
     document.getElementById("main").style.marginLeft = "210px";
-    document.getElementById("data_tab").style.width = "calc(100% - 160px - 50px - 10px * 2)";  // - Sidebar - IconBar - Padding
-    document.getElementById("data_tab").style.marginLeft = "210px";
+    document.getElementById("dataTab").style.width = "calc(100% - 160px - 50px - 10px * 2)";  // - Sidebar - IconBar - Padding
+    document.getElementById("dataTab").style.marginLeft = "210px";
 }
 
 function closeNav() {
     document.getElementById("Sidebar").style.width = "0px";
     document.getElementById("main").style.marginLeft = "50px"; /* Same as IconBar */
-    document.getElementById("data_tab").style.width = "calc(100% - 50px - 10px * 2)"; // - IconBar - Padding
-    document.getElementById("data_tab").style.marginLeft = "50px";
+    document.getElementById("dataTab").style.width = "calc(100% - 50px - 10px * 2)"; // - IconBar - Padding
+    document.getElementById("dataTab").style.marginLeft = "50px";
 }
 
 // Data tab functions
 function toggleDataTab() {
-    if (toggledatatab_c) {
+    if (toggledatatabC) {
         openDataTab();
     }
     else {
         closeDataTab();
     }
-    toggledatatab_c = !toggledatatab_c;
+    toggledatatabC = !toggledatatabC;
 }
 
 function openDataTab() {
-    document.getElementById("toggle_data_tab").innerHTML = '<i class="fa-solid fa-caret-down"></i>';
-    document.getElementById("data_tab").style.overflow = "auto";
-    document.getElementById("data_tab").style.height = "calc(100% - 15px)";
+    document.getElementById("toggleDataTab").innerHTML = '<i class="fa-solid fa-caret-down"></i>';
+    document.getElementById("dataTab").style.overflow = "auto";
+    document.getElementById("dataTab").style.height = "calc(100% - 15px)";
 }
 
 function closeDataTab() {
-    document.getElementById("toggle_data_tab").innerHTML = '<i class="fa-solid fa-caret-up"></i>';
-    document.getElementById("data_tab").style.overflow = "hidden";
-    document.getElementById("data_tab").style.height = "15px";
+    document.getElementById("toggleDataTab").innerHTML = '<i class="fa-solid fa-caret-up"></i>';
+    document.getElementById("dataTab").style.overflow = "hidden";
+    document.getElementById("dataTab").style.height = "15px";
 }
 
 // Video player
@@ -979,27 +979,27 @@ function togglePlay() {
     }
 }
 
-function show_vid(name, path) {
+function showVid(name, path) {
     // Reset slice mode
-    vid_id_disp = '';
-    toggle_slice_mode(); //draw_slices();
+    vidIdDisp = '';
+    toggleSliceMode(); //drawSlices();
 
     // Change video
     video.src = path;
     video.poster = '';
-    vid_id_disp = name;
+    vidIdDisp = name;
 
     console.log('video: ' + path);
 }
 
-function update_accordions() { // Reads project object to populate the accordions
+function updateAccordions() { // Reads project object to populate the accordions
     // Save accordion states (To later unfold)
     let acc = document.getElementsByClassName("accordion");
-    let unfolded_acc = [];
+    let unfoldedAcc = [];
 
     for (let i = 0; i < acc.length; i++) {
         if (acc[i].classList.contains("active")) {
-            unfolded_acc.push(acc[i].id);
+            unfoldedAcc.push(acc[i].id);
         }
     }
 
@@ -1011,28 +1011,28 @@ function update_accordions() { // Reads project object to populate the accordion
     for (let i = 0; i < prj.items.length; i++) { // Level 1 features
         // Video
         //console.log(prj.items[i].path);
-        if (prj.items[i].type == 'video_datum') {
+        if (prj.items[i].type == 'videoDatum') {
             if (os.platform() === 'win32') {
-                buffer += '<button id=\'' + prj.items[i].name + '\' class="accordion" ondblclick = "show_vid(\'' + prj.items[i].name + '\',\'' + prj.items[i].path.replaceAll('\\', '\\\\') + '\')" oncontextmenu = "sb_ctx_rightClick(' + prj.items[i].name + ')">' + prj.items[i].name + '</button>\n';
+                buffer += '<button id=\'' + prj.items[i].name + '\' class="accordion" ondblclick = "showVid(\'' + prj.items[i].name + '\',\'' + prj.items[i].path.replaceAll('\\', '\\\\') + '\')" oncontextmenu = "sbCtxRightClick(' + prj.items[i].name + ')">' + prj.items[i].name + '</button>\n';
             }
             else {
-                buffer += '<button id=\'' + prj.items[i].name + '\' class="accordion" ondblclick = "show_vid(\'' + prj.items[i].name + '\',\'' + prj.items[i].path + '\')" oncontextmenu = "sb_ctx_rightClick(' + prj.items[i].name + ')">' + prj.items[i].name + '</button>\n';
+                buffer += '<button id=\'' + prj.items[i].name + '\' class="accordion" ondblclick = "showVid(\'' + prj.items[i].name + '\',\'' + prj.items[i].path + '\')" oncontextmenu = "sbCtxRightClick(' + prj.items[i].name + ')">' + prj.items[i].name + '</button>\n';
             }
-            buffer += '<div class="accordion_item">\n';
+            buffer += '<div class="accordionItem">\n';
         }
         // Graph
         else {
-            buffer += '<button id=\'' + prj.items[i].name + '\' class="accordion" oncontextmenu = "sb_ctx_rightClick(' + prj.items[i].name + ')">' + prj.items[i].name + '</button>\n';
-            buffer += '<div class="accordion_item">\n';
+            buffer += '<button id=\'' + prj.items[i].name + '\' class="accordion" oncontextmenu = "sbCtxRightClick(' + prj.items[i].name + ')">' + prj.items[i].name + '</button>\n';
+            buffer += '<div class="accordionItem">\n';
         }
 
         for (let j = 0; j < prj.items[i].items.length; j++) { // Level 2 features
-            buffer += '<button id=\'' + prj.items[i].items[j].name + '\' class="accordion" oncontextmenu = "sb_ctx_rightClick(' + prj.items[i].items[j].name + ')">' + prj.items[i].items[j].name + '</button>\n';
-            buffer += '<div class="accordion_item">\n';
+            buffer += '<button id=\'' + prj.items[i].items[j].name + '\' class="accordion" oncontextmenu = "sbCtxRightClick(' + prj.items[i].items[j].name + ')">' + prj.items[i].items[j].name + '</button>\n';
+            buffer += '<div class="accordionItem">\n';
 
             for (let k = 0; k < prj.items[i].items[j].items.length; k++) { // Level 3 features
-                buffer += '<button id=\'' + prj.items[i].items[j].items[k].name + '\' class="accordion" oncontextmenu = "sb_ctx_rightClick(' + prj.items[i].items[j].items[k].name + ')">' + prj.items[i].items[j].items[k].name + '</button>\n';
-                //buffer += '<div class="accordion_item">\n';
+                buffer += '<button id=\'' + prj.items[i].items[j].items[k].name + '\' class="accordion" oncontextmenu = "sbCtxRightClick(' + prj.items[i].items[j].items[k].name + ')">' + prj.items[i].items[j].items[k].name + '</button>\n';
+                //buffer += '<div class="accordionItem">\n';
             }
             buffer += '</div>';
         }
@@ -1044,12 +1044,12 @@ function update_accordions() { // Reads project object to populate the accordion
     // Add accordions click events
     acc = document.getElementsByClassName("accordion");
 
-    function toggle_acc_item(acc_item) {
+    function toggleAccItem(accItem) {
         // Toggle between adding and removing the "active" class, to highlight the button that controls the panel
-        acc_item.classList.toggle("active");
+        accItem.classList.toggle("active");
 
         // Toggle between hiding and showing the active panel
-        let panel = acc_item.nextElementSibling;
+        let panel = accItem.nextElementSibling;
         if (panel != null) { // panel will be null at the end of the hierarchy
             if (panel.style.display === "block") {
                 panel.style.display = "none";
@@ -1061,26 +1061,26 @@ function update_accordions() { // Reads project object to populate the accordion
 
     for (let i = 0; i < acc.length; i++) {
         acc[i].addEventListener("click", function () {
-            toggle_acc_item(this);
+            toggleAccItem(this);
         });
 
         // Restore unfolded accordions
-        if (unfolded_acc.includes(acc[i].id)) {
-            toggle_acc_item(acc[i]);
+        if (unfoldedAcc.includes(acc[i].id)) {
+            toggleAccItem(acc[i]);
         }
     }
 
-    // Update data_tab
-    update_data_tab();
+    // Update dataTab
+    updateDataTab();
 }
 
-function hide_sb_ctx_Menu() {
+function hideSbCtxMenu() {
     document.getElementById("sidebarCxtMenu").style.display = "none";
 }
 
-function sb_ctx_rightClick(elem) {
+function sbCtxRightClick(elem) {
     if (document.getElementById("sidebarCxtMenu").style.display == "block") {
-        hide_sb_ctx_Menu();
+        hideSbCtxMenu();
     }
     else {
         let menu = document.getElementById("sidebarCxtMenu");
@@ -1089,8 +1089,8 @@ function sb_ctx_rightClick(elem) {
         menu.innerHTML = '';
         menu.innerHTML +=
             `<ul>
-        <li onclick="rename_prj_elem(${elem.id})"><a>Rename</a></li>
-        <li onclick="delete_prj_elem(${elem.id})"><a>Delete</a></li>
+        <li onclick="renamePrjElem(${elem.id})"><a>Rename</a></li>
+        <li onclick="deletePrjElem(${elem.id})"><a>Delete</a></li>
         </ul>`;
 
         // Place menu on top of clicked element
@@ -1100,7 +1100,7 @@ function sb_ctx_rightClick(elem) {
     }
 }
 
-function find_data_by_name(name) { // 3 levels of search depth
+function findDataByName(name) { // 3 levels of search depth
     for (let i = 0; i < prj.items.length; i++) { // Level 1
         if (prj.items[i].name == name) {
             return [i, -1, -1];
@@ -1121,8 +1121,8 @@ function find_data_by_name(name) { // 3 levels of search depth
     return [-1, -1, -1];
 }
 
-function prj_exists(name) { // Optimizable
-    return find_data_by_name(name)[0] != -1 || find_data_by_name(name)[1] != -1 || find_data_by_name(name)[2] != -1;
+function prjExists(name) { // Optimizable
+    return findDataByName(name)[0] != -1 || findDataByName(name)[1] != -1 || findDataByName(name)[2] != -1;
 }
 
 function sanitizeString(str) {
@@ -1141,18 +1141,18 @@ function sanitizeString(str) {
     }
 }
 
-function rename_prj_elem(elem) {
+function renamePrjElem(elem) {
     console.log('Renaming element: ')
     console.log({ elem });
-    console.log(find_data_by_name(elem.id));
+    console.log(findDataByName(elem.id));
 
-    let target = find_data_by_name(elem.id);
+    let target = findDataByName(elem.id);
 
     if (target[1] == -1) {
         dialogs.prompt("Rename:", prj.items[target[0]].name, r => {
             r = sanitizeString(r);
 
-            if (prj_exists(r)) {
+            if (prjExists(r)) {
                 alert('Already created an element named: ' + r);
                 throw ('Already existing name');
             }
@@ -1161,8 +1161,8 @@ function rename_prj_elem(elem) {
             }
             else {
                 prj.items[target[0]].name = r.toString();
-                show_vid('', ''); // Deactivate video player to force reselection
-                update_accordions();
+                showVid('', ''); // Deactivate video player to force reselection
+                updateAccordions();
             }
         })
         //prj.items[target[0]].name = prompt("Rename:", prj.items[target[0]].name);
@@ -1171,7 +1171,7 @@ function rename_prj_elem(elem) {
         dialogs.prompt("Rename:", prj.items[target[0]].items[target[1]].name, r => {
             r = sanitizeString(r);
 
-            if (prj_exists(r)) {
+            if (prjExists(r)) {
                 alert('Already created an element named: ' + r);
                 throw ('Already existing name');
             }
@@ -1180,7 +1180,7 @@ function rename_prj_elem(elem) {
             }
             else {
                 prj.items[target[0]].items[target[1]].name = r;
-                update_accordions();
+                updateAccordions();
             }
         })
         //prj.items[target[0]].items[target[1]].name = prompt("Rename:", prj.items[target[0]].items[target[1]].name);
@@ -1189,7 +1189,7 @@ function rename_prj_elem(elem) {
         dialogs.prompt("Rename:", prj.items[target[0]].items[target[1]].items[target[2]].name, r => {
             r = sanitizeString(r);
 
-            if (prj_exists(r)) {
+            if (prjExists(r)) {
                 alert('Already created an element named: ' + r);
                 throw ('Already existing name');
             }
@@ -1198,7 +1198,7 @@ function rename_prj_elem(elem) {
             }
             else {
                 prj.items[target[0]].items[target[1]].items[target[2]].name = r;
-                update_accordions();
+                updateAccordions();
             }
         })
         //prj.items[target[0]].items[target[1]].items[target[2]].name = prompt("Rename:", prj.items[target[0]].items[target[1]].items[target[2]].name);
@@ -1208,16 +1208,16 @@ function rename_prj_elem(elem) {
     prj.saved = false;
 }
 
-function delete_prj_elem(elem) {
+function deletePrjElem(elem) {
     console.log('Deleting element: ');
     console.log({ elem });
 
-    let target = find_data_by_name(elem.id);
+    let target = findDataByName(elem.id);
 
     if (target[1] == -1) {
         prj.items.splice(target[0], 1);
 
-        show_vid('', ''); // Deactivate video player to force reselection
+        showVid('', ''); // Deactivate video player to force reselection
     }
     else if (target[2] == -1) {
         prj.items[target[0]].items.splice(target[1], 1);
@@ -1227,8 +1227,8 @@ function delete_prj_elem(elem) {
     }
 
     // Update interface
-    update_accordions();
-    draw_slices();
+    updateAccordions();
+    drawSlices();
 
     // Set project.saved to false
     prj.saved = false;
@@ -1236,51 +1236,51 @@ function delete_prj_elem(elem) {
 
 
 // Classes ---------------------------------------------------------------------
-class prj_dict {
+class prjDict {
     constructor(name, path = null, saved = false, items = []) {
-        this.type = 'prj_dict';
+        this.type = 'prjDict';
         this.name = name;
         this.saved = saved;
         this.path = path;
         this.items = items;
         this.data = '';
 
-        this.name_num_count = 0;
+        this.nameNumCount = 0;
     }
 }
 
-class video_datum {
-    constructor(name, path, items = [], start_time = 0, end_time = -1) {
-        this.type = 'video_datum';
+class videoDatum {
+    constructor(name, path, items = [], startTime = 0, endTime = -1) {
+        this.type = 'videoDatum';
         this.name = name;
         this.path = path;
         this.items = items;
-        this.start_time = start_time;
-        this.end_time = end_time;
+        this.startTime = startTime;
+        this.endTime = endTime;
         this.framerate = -1;
     }
 }
 
 class slice {
-    constructor(name, coord, true_coord = null, win_coord = null, win_dim = null, processed = false, path_original = null, path_vmm = null, path_slice = null, items = [], bw_checked = false, bw_slider_val = 128, color_slider_val = 15) {
+    constructor(name, coord, trueCoord = null, winCoord = null, winDim = null, processed = false, pathOriginal = null, pathVmm = null, pathSlice = null, items = [], bwChecked = false, bwSliderVal = 128, colorSliderVal = 15) {
         this.type = 'slice';
         this.name = name;
         this.coord = coord;
-        this.true_coord = true_coord;
-        this.win_coord = win_coord;
-        this.win_dim = win_dim;
+        this.trueCoord = trueCoord;
+        this.winCoord = winCoord;
+        this.winDim = winDim;
         this.processed = processed;
-        this.path_original = path_original;
-        this.path_vmm = path_vmm;
-        this.path_slice = path_slice;
+        this.pathOriginal = pathOriginal;
+        this.pathVmm = pathVmm;
+        this.pathSlice = pathSlice;
         this.items = items;
-        this.pt_color_thrhd_up = [-1, -1];
-        this.pt_color_thrhd_low = [-1, -1];
+        this.ptColorThrhdUp = [-1, -1];
+        this.ptColorThrhdLow = [-1, -1];
 
         // Signal generation controls
-        this.bw_checked = bw_checked;
-        this.bw_slider_val = bw_slider_val;
-        this.color_slider_val = color_slider_val;
+        this.bwChecked = bwChecked;
+        this.bwSliderVal = bwSliderVal;
+        this.colorSliderVal = colorSliderVal;
     }
 }
 
@@ -1293,32 +1293,32 @@ class signal {
 }
 
 class FFT {
-    constructor(name, csv, radio_avg = false, radio_lub = false, radio_ulb = true, smth_chkbx = false, smth_slider = 0.02, smth_slider_box = 0.02, crop_start_box = 1, crop_stop_box = null) {
+    constructor(name, csv, radioAvg = false, radioLub = false, radioUlb = true, smthChkbx = false, smthSlider = 0.02, smthSliderBox = 0.02, cropStartBox = 1, cropStopBox = null) {
         this.type = 'FFT';
         this.name = name;
         this.csv = csv;
         // FFT generation controls
-        this.radio_avg = radio_avg;
-        this.radio_lub = radio_lub;
-        this.radio_ulb = radio_ulb;
-        this.smth_chkbx = smth_chkbx;
-        this.smth_slider_box = smth_slider_box;
-        this.crop_start_box = crop_start_box;
-        this.crop_stop_box = crop_stop_box;
+        this.radioAvg = radioAvg;
+        this.radioLub = radioLub;
+        this.radioUlb = radioUlb;
+        this.smthChkbx = smthChkbx;
+        this.smthSliderBox = smthSliderBox;
+        this.cropStartBox = cropStartBox;
+        this.cropStopBox = cropStopBox;
     }
 }
 
-class signal_graph {
+class signalGraph {
     constructor(name, sources) {
-        this.type = 'signal_graph';
+        this.type = 'signalGraph';
         this.name = name;
         this.sources = sources;
     }
 }
 
-class FFT_graph {
+class FFTGraph {
     constructor(name, sources) {
-        this.type = 'FFT_graph';
+        this.type = 'FFTGraph';
         this.name = name;
         this.sources = sources;
     }
@@ -1327,69 +1327,69 @@ class FFT_graph {
 
 // Menu interactions -----------------------------------------------------------
 // New project
-ipcRenderer.on('new_prj', function (event, args) {
+ipcRenderer.on('newPrj', function (event, args) {
     if (args && !prj.saved) {
         let confirmed = confirm('Are you sure you want to create a new project? All unsaved changes will be lost');
         if (confirmed) {
-            prj = new prj_dict('new_project');
+            prj = new prjDict('newProject');
         }
     } else if (args && prj.saved) {
-        prj = new prj_dict('new_project');
+        prj = new prjDict('newProject');
     }
-    update_accordions();
-    show_vid('', ''); // Deactivate video player to force reselection
+    updateAccordions();
+    showVid('', ''); // Deactivate video player to force reselection
 
     // Stop the spinning icon and restore functionality (if it was)
-    document.getElementById("process_slices_btn").innerHTML = '<i class="fa fa-sm fa-cog"></i>';
-    document.getElementById("process_slices_btn").onclick = function () { process_slices(); };
+    document.getElementById("processSlicesBtn").innerHTML = '<i class="fa fa-sm fa-cog"></i>';
+    document.getElementById("processSlicesBtn").onclick = function () { processSlices(); };
 });
 
 // Video import
 ipcRenderer.on('vimport', function (event, args) {
     for (let i = 0; i < args.length; i++) {
-        imp_vid_name_temp = sanitizeString(path.basename(args[i]).split('.')[0]);
+        impVidNameTemp = sanitizeString(path.basename(args[i]).split('.')[0]);
         // Check if importing two elements with the same name
-        if (prj_exists(imp_vid_name_temp)) {
-            alert('Already created an element named: ' + imp_vid_name_temp);
-            //throw('Already created an element named: ' + imp_vid_name_temp);
+        if (prjExists(impVidNameTemp)) {
+            alert('Already created an element named: ' + impVidNameTemp);
+            //throw('Already created an element named: ' + impVidNameTemp);
         }
         else {
             // Import elements
-            prj.items.push(new video_datum(imp_vid_name_temp, args[i]));
-            show_vid(imp_vid_name_temp, args[i]);
+            prj.items.push(new videoDatum(impVidNameTemp, args[i]));
+            showVid(impVidNameTemp, args[i]);
 
             // Set project.saved to false
             prj.saved = false;
         }
     }
-    update_accordions();
+    updateAccordions();
 });
 
-function vimport_req() { // Request video import from button
-    ipcRenderer.send('vimport_req', null);
+function vimportReq() { // Request video import from button
+    ipcRenderer.send('vimportReq', null);
 }
 
 // Save project
-ipcRenderer.on('save_path', function (event, args) { // Save as
+ipcRenderer.on('savePath', function (event, args) { // Save as
     prj.saved = true;
     prj.name = path.basename(args);
     prj.path = args; // Set project.path (to avoid always saving as)
 
     console.log({ prj });
 
-    // Update prj_data
-    prj.data = path.join(path.dirname(args), path.basename(args).split('.')[0] + '_data');
+    // Update prjData
+    prj.data = path.join(path.dirname(args), path.basename(args).split('.')[0] + 'Data');
 
     // Serialize project object
-    let prj_dict_str = JSON.stringify(prj);
+    let prjDictStr = JSON.stringify(prj);
 
     // Write to file
-    fs.mkdir(path.dirname(args) + '/' + path.basename(args).split('.')[0] + '_data', (err) => {
+    fs.mkdir(path.dirname(args) + '/' + path.basename(args).split('.')[0] + 'Data', (err) => {
         if (err) {
             return console.error(err);
         }
     });
-    fs.writeFile(args, prj_dict_str, 'utf8', function (err) {
+    fs.writeFile(args, prjDictStr, 'utf8', function (err) {
         if (err) {
             return console.log(err);
         } else {
@@ -1403,10 +1403,10 @@ function save() {
         prj.saved = true;
 
         // Serialize project object
-        let prj_dict_str = JSON.stringify(prj);
+        let prjDictStr = JSON.stringify(prj);
 
         // Write to file
-        fs.writeFile(prj.path, prj_dict_str, 'utf8', function (err) {
+        fs.writeFile(prj.path, prjDictStr, 'utf8', function (err) {
             if (err) {
                 return console.log(err);
             } else {
@@ -1416,7 +1416,7 @@ function save() {
     }
     else {
         // Use the Save As dialog
-        ipcRenderer.send('save_as', null);
+        ipcRenderer.send('saveAs', null);
     }
 }
 
@@ -1426,47 +1426,47 @@ ipcRenderer.on('save', function (event, args) { // Save
 
 // Load project
 function load(args) {
-    let prj_dict_str = fs.readFileSync(args, 'utf-8').toString();
-    prj = JSON.parse(prj_dict_str);
+    let prjDictStr = fs.readFileSync(args, 'utf-8').toString();
+    prj = JSON.parse(prjDictStr);
     console.log({ prj });
-    update_accordions();
+    updateAccordions();
 
     // Clean UI
-    show_vid('', ''); // Deactivate video player to force reselection
+    showVid('', ''); // Deactivate video player to force reselection
 
     // Stop the spinning icon and restore functionality (if it was)
-    document.getElementById("process_slices_btn").innerHTML = '<i class="fa fa-sm fa-cog"></i>';
-    document.getElementById("process_slices_btn").onclick = function () { process_slices(); };
+    document.getElementById("processSlicesBtn").innerHTML = '<i class="fa fa-sm fa-cog"></i>';
+    document.getElementById("processSlicesBtn").onclick = function () { processSlices(); };
 }
 
-function load_req() {
-    ipcRenderer.send('load_req', null);
+function loadReq() {
+    ipcRenderer.send('loadReq', null);
 }
 
-ipcRenderer.on('load_path', function (event, args) {
+ipcRenderer.on('loadPath', function (event, args) {
     load(args);
 });
 
 
 // Main ------------------------------------------------------------------------
 // State variables
-let togglenav_c = true;
-let toggledatatab_c = true;
-let prj = new prj_dict('new_project');
+let togglenavC = true;
+let toggledatatabC = true;
+let prj = new prjDict('newProject');
 
 // Slice selector
 const video = document.getElementById('video');
-let slice_state = false;
-let vid_id_disp = '';
+let sliceState = false;
+let vidIdDisp = '';
 
-let temp_slice_pt_start = [-1, -1];
-let temp_slice_pt_stop = [-1, -1];
+let tempSlicePtStart = [-1, -1];
+let tempSlicePtStop = [-1, -1];
 
 // Sidebar context menu
-document.onclick = hide_sb_ctx_Menu;
+document.onclick = hideSbCtxMenu;
 
 // Slice slector initialization
 document.getElementById("play-pause").style.visibility = "hidden";
 
 // Initialize UI
-update_accordions();
+updateAccordions();

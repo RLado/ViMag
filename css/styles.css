@@ -38,12 +38,12 @@ body {
   /* Add a hover color */
 }
 
-.ib_menu {
+.ibMenu {
   background-color: #0055ff80;
   /* Add an active/current color */
 }
 
-.ib_bt {
+.ibBt {
   background-color: #4d4d4d;
   /* Add an active/current color */
 }
@@ -135,7 +135,7 @@ body {
 }
 
 /* Style the accordion panel. Note: hidden by default */
-.accordion_item {
+.accordionItem {
   padding: 0 10px;
   color: #d2d2d2;
   display: none;
@@ -159,26 +159,26 @@ body {
   transition: .5s;
 }
 
-.video_bg {
+.videoBg {
   background-color: #878787;
   padding: 5px;
   border-radius: 8px 8px 8px 8px;
 }
 
-.main_video {
+.mainVideo {
   position: relative;
   width: 95%;
   z-index: 4;
 }
 
-.video_canvas {
+.videoCanvas {
   position: absolute;
   z-index: 5;
   background-color: #00000000;
   visibility: hidden;
 }
 
-.data_tab {
+.dataTab {
   height: 15px;
   width: calc(100% - 160px - 50px - 10px * 2);
   /* - Sidebar - IconBar - Padding */
@@ -200,11 +200,11 @@ body {
   transition: .5s;
 }
 
-.data_tab_contents {
+.dataTabContents {
   text-align: left;
 }
 
-.slice_img {
+.sliceImg {
   text-align: center;
   margin-left: 5%;
   margin-right: 5%;
@@ -212,7 +212,7 @@ body {
   height: 200px;
 }
 
-.graph_format {
+.graphFormat {
   text-align: center;
   margin-left: 5%;
   margin-right: 5%;
@@ -220,7 +220,7 @@ body {
   height: 250px;
 }
 
-.graph_format_legend {
+.graphFormatLegend {
   text-align: center;
   margin-left: 5%;
   margin-right: 5%;
@@ -228,38 +228,38 @@ body {
   height: 300px;
 }
 
-.discrete_button {
+.discreteButton {
   border: 0px none #00000000;
   background-color: #00000000;
 }
 
-.generic_button {
+.genericButton {
   border: 0px none #00000000;
   background-color: #474747;
   color: #c5c5c5;
   box-shadow: none;
 }
 
-.generic_button:hover {
+.genericButton:hover {
   border: 0px none #00000000;
   background-color: #505050;
   color: #c5c5c5;
   box-shadow: none;
 }
 
-.generic_chkbox {
+.genericChkbox {
   background: #474747;
   color: #205fac;
 }
 
-.generic_slider {
+.genericSlider {
   color: #205fac;
 }
 
-.generic_radio {
+.genericRadio {
   color: #205fac;
 }
 
-.generic_box {
+.genericBox {
   outline: none;
 }
