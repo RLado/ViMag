@@ -237,7 +237,7 @@ async function processSlices() {
 
                 await new Promise((resolve, reject) => {
                     PythonShell.run('python/video2frames.py', options, function (errV2f, resultsV2f) {
-                        if (errV2f){ // Error callback
+                        if (errV2f) { // Error callback
                             // Stop the spinning icon and restore functionality (if it was)
                             document.getElementById("processSlicesBtn").innerHTML = '<i class="fa fa-sm fa-cog"></i>';
                             document.getElementById("processSlicesBtn").onclick = function () { processSlices(); };
@@ -269,7 +269,7 @@ async function processSlices() {
                         //console.log({ options });
 
                         PythonShell.run('python/STB-VMM/run.py', options, function (errSTB, resultsSTB) {
-                            if (errSTB){ // Error callback
+                            if (errSTB) { // Error callback
                                 // Stop the spinning icon and restore functionality (if it was)
                                 document.getElementById("processSlicesBtn").innerHTML = '<i class="fa fa-sm fa-cog"></i>';
                                 document.getElementById("processSlicesBtn").onclick = function () { processSlices(); };
@@ -308,7 +308,7 @@ async function processSlices() {
                             };
 
                             PythonShell.run('python/TempSlice/tempslice.py', options, function (errSlice, resultsSlice) {
-                                if (errSlice){ // Error callback
+                                if (errSlice) { // Error callback
                                     // Stop the spinning icon and restore functionality (if it was)
                                     document.getElementById("processSlicesBtn").innerHTML = '<i class="fa fa-sm fa-cog"></i>';
                                     document.getElementById("processSlicesBtn").onclick = function () { processSlices(); };
@@ -758,7 +758,7 @@ function updateDataTab() {
             }
             if (!hasSignal) {
                 // Add new signal object
-                prj.items[elem[0]].items[elem[1]].items.push(new signal(`${prj.items[elem[0]].items[elem[1]].name}Signal`, `${bwImg}.csv`));
+                prj.items[elem[0]].items[elem[1]].items.push(new signal(`${prj.items[elem[0]].items[elem[1]].name}_Signal`, `${bwImg}.csv`));
 
                 // Set project.saved to false
                 prj.saved = false;
