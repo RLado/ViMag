@@ -1,7 +1,7 @@
 import argparse
 
 # Argument parser
-parser = argparse.ArgumentParser(description='Extracts frames from a video and saves them on a user designated directory.')
+parser = argparse.ArgumentParser(description='')
 parser._action_groups.pop()
 required = parser.add_argument_group('required arguments')
 optional = parser.add_argument_group('optional arguments')

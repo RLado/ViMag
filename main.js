@@ -209,6 +209,9 @@ async function saveProject(MainWindow) {
         console.log({ filePaths })
 
         if (!filePaths.canceled) {
+            if (filePaths.filePath.substring(filePaths.filePath.length - 3) != '.vl'){
+                filePaths.filePath += '.vl';
+            }
             MainWindow.webContents.send('savePath', filePaths.filePath);
         }
     });

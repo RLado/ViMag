@@ -97,20 +97,24 @@ function drawSlices() {
 function toggleSliceMode() {
     drawSlices(); // Resize video canvas
     let vcnvas = document.getElementById("videoCanvas"); // Get video canvas
+    document.getElementById("sliceBtn").disabled = false;
 
     if (vidIdDisp != '') {
         sliceState = !sliceState; // Change state
+        document.getElementById("sliceBtn").checked = false;
         video.controls = !sliceState; // If not slicing show controls
 
         if (sliceState) {
             console.log(`Slice mode activated on ${vidIdDisp}`);
 
+            document.getElementById("sliceBtn").checked = true;
             document.getElementById("play-pause").style.visibility = "visible";
             vcnvas.style.visibility = "visible";
             window.addEventListener("resize", drawSlices, false);
             vcnvas.addEventListener("click", setPtSlice, false);
         }
         else {
+            document.getElementById("sliceBtn").checked = false;
             document.getElementById("play-pause").style.visibility = "hidden";
             vcnvas.style.visibility = "hidden";
             window.removeEventListener("resize", drawSlices);
@@ -233,7 +237,12 @@ async function processSlices() {
 
                 await new Promise((resolve, reject) => {
                     PythonShell.run('python/video2frames.py', options, function (errV2f, resultsV2f) {
-                        if (errV2f) throw errV2f; // Error callback
+                        if (errV2f){ // Error callback
+                            // Stop the spinning icon and restore functionality (if it was)
+                            document.getElementById("processSlicesBtn").innerHTML = '<i class="fa fa-sm fa-cog"></i>';
+                            document.getElementById("processSlicesBtn").onclick = function () { processSlices(); };
+                            throw errV2f;
+                        }
 
                         // Results callback
                         console.log('Video crop results: %j', resultsV2f);
@@ -260,7 +269,12 @@ async function processSlices() {
                         //console.log({ options });
 
                         PythonShell.run('python/STB-VMM/run.py', options, function (errSTB, resultsSTB) {
-                            if (errSTB) throw errSTB; // Error callback
+                            if (errSTB){ // Error callback
+                                // Stop the spinning icon and restore functionality (if it was)
+                                document.getElementById("processSlicesBtn").innerHTML = '<i class="fa fa-sm fa-cog"></i>';
+                                document.getElementById("processSlicesBtn").onclick = function () { processSlices(); };
+                                throw errSTB;
+                            }
 
                             // Results callback
                             //console.log({ resultsSTB });
@@ -294,7 +308,12 @@ async function processSlices() {
                             };
 
                             PythonShell.run('python/TempSlice/tempslice.py', options, function (errSlice, resultsSlice) {
-                                if (errSlice) throw errSlice; // Error callback
+                                if (errSlice){ // Error callback
+                                    // Stop the spinning icon and restore functionality (if it was)
+                                    document.getElementById("processSlicesBtn").innerHTML = '<i class="fa fa-sm fa-cog"></i>';
+                                    document.getElementById("processSlicesBtn").onclick = function () { processSlices(); };
+                                    throw errSlice;
+                                }
 
                                 // Results callback
                                 console.log(`Slice for ${prj.items[i].items[j].name} completed`);
@@ -900,7 +919,7 @@ function updateDataTab() {
         //console.log({ options });
 
 
-        PythonShell.run('python/TempSlice/csv-fft.py', options, function (errCsvfft, resultsCsvfft) {
+        PythonShell.run('python/csv-fft.py', options, function (errCsvfft, resultsCsvfft) {
             if (errCsvfft) throw errCsvfft; // Error callback
 
             // Results callback
@@ -982,6 +1001,7 @@ function togglePlay() {
 function showVid(name, path) {
     // Reset slice mode
     vidIdDisp = '';
+    document.getElementById("sliceBtn").checked = false;
     toggleSliceMode(); //drawSlices();
 
     // Change video
@@ -1027,7 +1047,7 @@ function updateAccordions() { // Reads project object to populate the accordions
         }
 
         for (let j = 0; j < prj.items[i].items.length; j++) { // Level 2 features
-            buffer += '<button id=\'' + prj.items[i].items[j].name + '\' class="accordion" oncontextmenu = "sbCtxRightClick(' + prj.items[i].items[j].name + ')">' + prj.items[i].items[j].name + '</button>\n';
+            buffer += '<button id=\'' + prj.items[i].items[j].name + '\' class="accordion" oncontextmenu = "sbCtxRightClick(' + prj.items[i].items[j].name + ')" ondblclick = "toggleDataTab()">' + prj.items[i].items[j].name + '</button>\n';
             buffer += '<div class="accordionItem">\n';
 
             for (let k = 0; k < prj.items[i].items[j].items.length; k++) { // Level 3 features
