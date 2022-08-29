@@ -293,9 +293,26 @@ async function processSlices() {
                             // --Run python slicer
                             let sliceFiles = fs.readdirSync(prj.items[i].items[j].pathVmm);
                             for (let l = 0; l < sliceFiles.length; l++) {
-                                sliceFiles[l] = path.join(prj.items[i].items[j].pathVmm, sliceFiles[l]);
+                                if (sliceFiles[l].slice(-4) == '.png'){
+                                    sliceFiles[l] = path.join(prj.items[i].items[j].pathVmm, sliceFiles[l]);
+                                }
+                                else{
+                                    sliceFiles.pop(l);
+                                }
                             }
                             //console.log({ sliceFiles });
+
+                            // --Write a file list separated by \n
+                            let content = '';
+                            for (let fpath = 0; fpath < sliceFiles.length; fpath++) {
+                                content += `${sliceFiles[fpath]}\n`;
+                            }
+                            fs.writeFile(path.join(prj.items[i].items[j].pathVmm, 'list.txt'), content, err => {
+                                if (err) {
+                                    console.error(err);
+                                }
+                                // file written successfully
+                            });
 
                             options = {
                                 pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
@@ -303,8 +320,8 @@ async function processSlices() {
                                     '-s', sliceStartCoord[0], sliceStartCoord[1],
                                     '-e', sliceEndCoord[0], sliceEndCoord[1],
                                     '-o', prj.items[i].items[j].pathSlice,
-                                    '-i',
-                                ].concat(sliceFiles),
+                                    '-i', path.join(prj.items[i].items[j].pathVmm, 'list.txt'),
+                                ],
                             };
 
                             PythonShell.run('python/TempSlice/tempslice.py', options, function (errSlice, resultsSlice) {
@@ -312,6 +329,8 @@ async function processSlices() {
                                     // Stop the spinning icon and restore functionality (if it was)
                                     document.getElementById("processSlicesBtn").innerHTML = '<i class="fa fa-sm fa-cog"></i>';
                                     document.getElementById("processSlicesBtn").onclick = function () { processSlices(); };
+                                    
+                                    //console.log( {resultsSlice} );
                                     throw errSlice;
                                 }
 
