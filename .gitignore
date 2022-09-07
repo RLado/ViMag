@@ -266,3 +266,4 @@ trash/
 *.mp4
 *.mkv
 *.vl
+*.code-workspace

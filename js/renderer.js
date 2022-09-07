@@ -12,18 +12,12 @@ const csvtojson = require("csvtojson");
 
 
 // Functions -------------------------------------------------------------------
-function pythonTest(args) {
-    console.log('Testing python')
-    let options = {
-        pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
-        args: ['-i "test data"'],
-    }
-    PythonShell.run('python/test.py', options, function (err, results) {
-        if (err) throw err;
-        console.log('results: %j', results);
-    });
-}
-
+/**
+ * Converts an Event to a Promise
+ * @param  {HTMLElement} item The item to be stuck with an EventListener
+ * @param  {string} event The event to be listened for
+ * @return {Promise}      Promise that resolves once the event has triggered
+ */
 function getPromiseFromEvent(item, event) {
     return new Promise((resolve) => {
         const listener = () => {
@@ -34,8 +28,13 @@ function getPromiseFromEvent(item, event) {
     })
 }
 
-// Get click position inside the video element in order to create a slice
+/**
+ * Get click position inside the video element to create a slice
+ * @param  {Event} e Event object passed by an EventListener
+ */
 function setPtSlice(e) {
+    const video = document.getElementById('video');
+
     let videoCoords = video.getBoundingClientRect();
     let xPosition = e.clientX - videoCoords.left;
     let yPosition = e.clientY - videoCoords.top;
@@ -66,8 +65,12 @@ function setPtSlice(e) {
     // alert('pos x:' + xPosition + '/' + videoCoords.width + ' pos y: ' + yPosition + '/' + videoCoords.height);
 }
 
-// Draw video slices
+/**
+ * Draw slices on top of the video canvas
+ */
 function drawSlices() {
+    const video = document.getElementById('video');
+
     if (vidIdDisp != '') {
         let target = findDataByName(vidIdDisp);
         var videoCoords = video.getBoundingClientRect(); // Access values as height and width
@@ -93,8 +96,12 @@ function drawSlices() {
     }
 }
 
-// Toggle slicing mode
+/**
+ * Toggle slicing mode on and off. Redraws or hides slices.
+ */
 function toggleSliceMode() {
+    const video = document.getElementById('video');
+
     drawSlices(); // Resize video canvas
     let vcnvas = document.getElementById("videoCanvas"); // Get video canvas
     document.getElementById("sliceBtn").disabled = false;
@@ -133,9 +140,12 @@ function toggleSliceMode() {
     }
 }
 
-
-// Proceses the slices through the python pipeline
+/**
+ * Proceses the slices through the python pipeline
+ */
 async function processSlices() {
+    const video = document.getElementById('video');
+
     if (!prj.saved && prj.path == null) {
         alert("The project must be saved before processing");
         ipcRenderer.send('saveAs', null);
@@ -293,10 +303,10 @@ async function processSlices() {
                             // --Run python slicer
                             let sliceFiles = fs.readdirSync(prj.items[i].items[j].pathVmm);
                             for (let l = 0; l < sliceFiles.length; l++) {
-                                if (sliceFiles[l].slice(-4) == '.png'){
+                                if (sliceFiles[l].slice(-4) == '.png') {
                                     sliceFiles[l] = path.join(prj.items[i].items[j].pathVmm, sliceFiles[l]);
                                 }
-                                else{
+                                else {
                                     sliceFiles.pop(l);
                                 }
                             }
@@ -329,7 +339,7 @@ async function processSlices() {
                                     // Stop the spinning icon and restore functionality (if it was)
                                     document.getElementById("processSlicesBtn").innerHTML = '<i class="fa fa-sm fa-cog"></i>';
                                     document.getElementById("processSlicesBtn").onclick = function () { processSlices(); };
-                                    
+
                                     //console.log( {resultsSlice} );
                                     throw errSlice;
                                 }
@@ -360,7 +370,9 @@ async function processSlices() {
     document.getElementById("processSlicesBtn").onclick = function () { processSlices(); };
 }
 
-// Populate data tab
+/**
+ * Populate data tab (Slide up graphs tab)
+ */
 function updateDataTab() {
     let dataTabContents = document.getElementById('dataTabContents');
     dataTabContents.innerHTML = '';
@@ -730,7 +742,11 @@ function updateDataTab() {
     }
 
     // Functions:
-    // Add click tracking to image element and run slice2csv
+    /**
+     * Add click tracking to image element and run slice2csv
+     * @param  {Event} e Event object passed by an EventListener
+     * @param  {Array} elem [i,j] elements on prj
+     */
     function selectTresholdPt(e, elem) { // e -> eventElem; elem -> [i,j] elements on prj
         let img = document.getElementById(`${prj.items[elem[0]].items[elem[1]].name}SliceImg`);
 
@@ -831,6 +847,10 @@ function updateDataTab() {
     }
 
     // BW threshold image
+    /**
+     * Apply a binary threshold to a prj element (image)
+     * @param  {Array} elem [i,j] elements on prj
+     */
     function bwThreshold(elem) { // elem -> [i,j] elements on prj
         const d = new Date(); //This will be used to force an image refresh
 
@@ -861,6 +881,10 @@ function updateDataTab() {
     }
 
     // FFT a signal
+    /**
+     * Use a prj signal to generate an FFT using python
+     * @param  {Array} elem [i,j,k] elements on prj
+     */
     function signal2fft(elem) { // elem -> [i,j,k] elements on prj
         // Data source radio buttons check
         let options;
@@ -956,6 +980,9 @@ function updateDataTab() {
 }
 
 // Navigation bar functions
+/**
+ * Open and close (toggle) the side Navigation Bar (contains accordions)
+ */
 function toggleNav() {
     if (togglenavC) {
         closeNav();
@@ -970,6 +997,9 @@ function toggleNav() {
     setTimeout(() => drawSlices(), 500); // wait for resize transition to redraw
 }
 
+/**
+ * Open the side Navigation Bar
+ */
 function openNav() {
     document.getElementById("Sidebar").style.width = "160px";
     document.getElementById("main").style.marginLeft = "210px";
@@ -977,6 +1007,9 @@ function openNav() {
     document.getElementById("dataTab").style.marginLeft = "210px";
 }
 
+/**
+ * Close the side Navigation Bar
+ */
 function closeNav() {
     document.getElementById("Sidebar").style.width = "0px";
     document.getElementById("main").style.marginLeft = "50px"; /* Same as IconBar */
@@ -985,6 +1018,10 @@ function closeNav() {
 }
 
 // Data tab functions
+/**
+ * Open and close (toggle) the data tab (or graph tab) containing video 
+ * processing results.
+ */
 function toggleDataTab() {
     if (toggledatatabC) {
         openDataTab();
@@ -995,12 +1032,20 @@ function toggleDataTab() {
     toggledatatabC = !toggledatatabC;
 }
 
+/**
+ * Open (toggle) the data tab (or graph tab) containing video processing 
+ * results.
+ */
 function openDataTab() {
     document.getElementById("toggleDataTab").innerHTML = '<i class="fa-solid fa-caret-down"></i>';
     document.getElementById("dataTab").style.overflow = "auto";
     document.getElementById("dataTab").style.height = "calc(100% - 15px)";
 }
 
+/**
+ * Close (toggle) the data tab (or graph tab) containing video processing 
+ * results.
+ */
 function closeDataTab() {
     document.getElementById("toggleDataTab").innerHTML = '<i class="fa-solid fa-caret-up"></i>';
     document.getElementById("dataTab").style.overflow = "hidden";
@@ -1008,7 +1053,12 @@ function closeDataTab() {
 }
 
 // Video player
+/**
+ * Toggle main video playback
+ */
 function togglePlay() {
+    const video = document.getElementById('video');
+
     if (!!(video.currentTime > 0 && !video.paused && !video.ended && video.readyState > 2)) { // Is the video playing?
         video.pause();
     }
@@ -1017,7 +1067,14 @@ function togglePlay() {
     }
 }
 
+/**
+ * Change the video displayed by the main video element
+ * @param   {String} name Name of the video file
+ * @param   {String} path Path to the video file
+ */
 function showVid(name, path) {
+    const video = document.getElementById('video');
+
     // Reset slice mode
     vidIdDisp = '';
     document.getElementById("sliceBtn").checked = false;
@@ -1031,6 +1088,9 @@ function showVid(name, path) {
     console.log('video: ' + path);
 }
 
+/**
+ * Update NavBar contents with relevant prj data
+ */
 function updateAccordions() { // Reads project object to populate the accordions
     // Save accordion states (To later unfold)
     let acc = document.getElementsByClassName("accordion");
@@ -1083,6 +1143,10 @@ function updateAccordions() { // Reads project object to populate the accordions
     // Add accordions click events
     acc = document.getElementsByClassName("accordion");
 
+    /**
+     * Toggle open/close NavBar items
+     * @param   {HTMLElement} accItem An accordion element
+     */
     function toggleAccItem(accItem) {
         // Toggle between adding and removing the "active" class, to highlight the button that controls the panel
         accItem.classList.toggle("active");
@@ -1113,10 +1177,17 @@ function updateAccordions() { // Reads project object to populate the accordions
     updateDataTab();
 }
 
+/**
+ * Hide right click context menu of the NavBar (accordions)
+ */
 function hideSbCtxMenu() {
     document.getElementById("sidebarCxtMenu").style.display = "none";
 }
 
+/**
+ * Open NavBar context menu (rename, delete)
+ * @param   {String} elem Element name as appears in prj
+ */
 function sbCtxRightClick(elem) {
     if (document.getElementById("sidebarCxtMenu").style.display == "block") {
         hideSbCtxMenu();
@@ -1139,6 +1210,13 @@ function sbCtxRightClick(elem) {
     }
 }
 
+/**
+ * Return the prj coordinates of an element given it's name
+ * @param   {String} elem Element name as appears in prj
+ * @return  {Array}     An array containing the 3 coordinates [i,j,k] of the 
+ *                      element searched. If a coordinate position does not 
+ *                      exist returns -1 in that position
+ */
 function findDataByName(name) { // 3 levels of search depth
     for (let i = 0; i < prj.items.length; i++) { // Level 1
         if (prj.items[i].name == name) {
@@ -1160,10 +1238,20 @@ function findDataByName(name) { // 3 levels of search depth
     return [-1, -1, -1];
 }
 
+/**
+ * Check if an element exists inside prj searching by name
+ * @param {String} name 
+ * @returns {Boolean}
+ */
 function prjExists(name) { // Optimizable
     return findDataByName(name)[0] != -1 || findDataByName(name)[1] != -1 || findDataByName(name)[2] != -1;
 }
 
+/**
+ * Removes problematic characters from a String and returns the sanitized String
+ * @param {String} str 
+ * @returns {String} Sanitized string
+ */
 function sanitizeString(str) {
     // If undefined return undefined
     if (str === undefined) {
@@ -1180,8 +1268,12 @@ function sanitizeString(str) {
     }
 }
 
+/**
+ * Renames an element from prj by name
+ * @param {HTMLElement} elem prj element
+ */
 function renamePrjElem(elem) {
-    console.log('Renaming element: ')
+    console.log('Renaming element: ');
     console.log({ elem });
     console.log(findDataByName(elem.id));
 
@@ -1247,6 +1339,10 @@ function renamePrjElem(elem) {
     prj.saved = false;
 }
 
+/**
+ * Removes an element from prj by name
+ * @param {HTMLElement} elem prj element
+ */
 function deletePrjElem(elem) {
     console.log('Deleting element: ');
     console.log({ elem });
@@ -1494,7 +1590,6 @@ let toggledatatabC = true;
 let prj = new prjDict('newProject');
 
 // Slice selector
-const video = document.getElementById('video');
 let sliceState = false;
 let vidIdDisp = '';
 
