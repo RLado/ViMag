@@ -45,6 +45,7 @@ const createWindow = () => {
         webPreferences: {
             nodeIntegration: true, // These arguments are now required since they are disabled by default for security reasons
             contextIsolation: false,
+            devTools: !app.isPackaged,
         },
     });
     win.toggleDevTools(); //For debug
