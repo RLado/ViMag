@@ -11,11 +11,11 @@
 <body>
 
   <div id="Iconbar" class="iconbar">
-    <a class="ib_menu" onclick="toggleNav()"><i class="fa fa-sm fa-bars"></i></a>
-    <a class="ib_bt" onclick="load_req()"><i class="fa fa-sm fa-folder-open"></i></a>
-    <a class="ib_bt" onclick="save()"><i class="fa fa-sm fa-floppy-disk"></i></a>
-    <a class="ib_bt" onclick="vimport_req()"><i class="fa fa-sm fa-file-import"></i></a>
-    <a id="process_slices_btn" class="ib_bt" onclick="process_slices()"><i class="fa fa-sm fa-cog"></i></a>
+    <a title="Fold/Unfold Sidebar" class="ibMenu" onclick="toggleNav()"><i class="fa fa-sm fa-bars"></i></a>
+    <a title="Load project" class="ibBt" onclick="loadReq()"><i class="fa fa-sm fa-folder-open"></i></a>
+    <a title="Save project" class="ibBt" onclick="save()"><i class="fa fa-sm fa-floppy-disk"></i></a>
+    <a title="Import video file" class="ibBt" onclick="vimportReq()"><i class="fa fa-sm fa-file-import"></i></a>
+    <a title="Compute VMM" id="processSlicesBtn" class="ibBt" onclick="processSlices()"><i class="fa fa-sm fa-cog"></i></a>
 
   </div>
 
@@ -33,27 +33,33 @@
   </div>
 
   <div id="main" class="main">
-    <div class="video_bg">
-      <video id="video" class="main_video" poster="../img/FilmIcon.png" controls></video>
-      <canvas id="video_canvas" class="video_canvas"></canvas>
+    <div class="videoBg">
+      <p style="text-align:left; color:#d2d2d2;">
+        Slice Mode:
+        <label class="switch">
+          <input id="sliceBtn" type="checkbox" onclick="toggleSliceMode()" disabled>
+          <span class="slider"></span>
+        </label>
+      </p>
+      <video id="video" class="mainVideo" poster="../img/FilmIcon.png" controls></video>
+      <canvas id="videoCanvas" class="videoCanvas"></canvas>
     </div>
     <p>
-      <button id="play-pause" class="generic_button" onclick="togglePlay()"><i class="fa fa-circle-play"></i></button>
-      <button id="slice_btn" class="generic_button" onclick="toggle_slice_mode()">Slice Mode</button>
+      <button id="play-pause" class="genericButton" onclick="togglePlay()"><i class="fa fa-circle-play"></i></button>
     </p>
 
   </div>
 
-  <div id="data_tab" class="data_tab">
-    <button id="toggle_data_tab" onclick="toggleDataTab()" height="10px" class="discrete_button">
+  <div id="dataTab" class="dataTab">
+    <button id="toggleDataTab" onclick="toggleDataTab()" height="10px" class="discreteButton">
       <i class="fa-solid fa-caret-up"></i>
     </button>
     <!-- <p>
-        <button id="process_slices_btn" onclick="process_slices()">Process slices</button>
+        <button id="processSlicesBtn" onclick="processSlices()">Process slices</button>
       </p> -->
 
     <!-- Content -->
-    <div id="data_tab_contents" class="data_tab_contents">
+    <div id="dataTabContents" class="dataTabContents">
       <!-- Populated automatically by the renderer -->
 
     </div>

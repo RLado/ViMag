@@ -9,20 +9,20 @@ let { PythonShell } = require('python-shell');
 
 // Setup python environament
 console.log('Setting up python environament ...');
-let pyvenv_content;
+let pyvenvContent;
 if (process.platform === 'win32') {
-    pyvenv_content = `home = ${path.join(process.cwd(), 'python/interpreter/PCbuild/amd64')}
+    pyvenvContent = `home = ${path.join(process.cwd(), 'python/interpreter/PCbuild/amd64')}
 include-system-site-packages = false
 version = 3.10.6
 `;
 }
 else {
-    pyvenv_content = `home = ${path.join(process.cwd(), 'python/interpreter')}
+    pyvenvContent = `home = ${path.join(process.cwd(), 'python/interpreter')}
 include-system-site-packages = false
 version = 3.10.6
 `;
 }
-fs.writeFile(path.join(process.cwd(), 'python/interpreter/vibrolab_venv/pyvenv.cfg'), pyvenv_content, err => {
+fs.writeFile(path.join(process.cwd(), 'python/interpreter/vibrolab_venv/pyvenv.cfg'), pyvenvContent, err => {
     if (err) {
         console.error(err);
     }
@@ -45,12 +45,13 @@ const createWindow = () => {
         webPreferences: {
             nodeIntegration: true, // These arguments are now required since they are disabled by default for security reasons
             contextIsolation: false,
+            devTools: !app.isPackaged,
         },
     });
     win.toggleDevTools(); //For debug
     win.loadFile('./html/index.html');
 
-    const menu_template = [
+    const menuTemplate = [
         {
             label: 'File',
             submenu: [
@@ -58,14 +59,14 @@ const createWindow = () => {
                     label: 'New project',
                     accelerator: 'CmdOrCtrl+N',
                     click() {
-                        win.webContents.send('new_prj', true);
+                        win.webContents.send('newPrj', true);
                     }
                 },
                 {
                     label: 'Load project',
                     accelerator: 'CmdOrCtrl+O',
                     click() {
-                        load_project(win);
+                        loadProject(win);
                     }
                 },
                 {
@@ -79,7 +80,7 @@ const createWindow = () => {
                     label: 'Save As',
                     accelerator: 'CmdOrCtrl+Shift+S',
                     click() {
-                        save_project(win);
+                        saveProject(win);
                     }
                 },
                 {
@@ -89,7 +90,7 @@ const createWindow = () => {
                     label: 'Import video',
                     accelerator: 'CmdOrCtrl+I',
                     click() {
-                        import_vid(win);
+                        importVid(win);
                     },
                 },
                 {
@@ -119,7 +120,7 @@ const createWindow = () => {
                 {
                     label: 'About',
                     click() {
-                        const about_win = new BrowserWindow({
+                        const aboutWin = new BrowserWindow({
                             title: 'About',
                             width: 340,
                             height: 215,
@@ -127,31 +128,31 @@ const createWindow = () => {
                             resizable: false,
                             fullscreenable: false,
                         });
-                        about_win.removeMenu();
-                        about_win.loadFile('./html/about.html');
+                        aboutWin.removeMenu();
+                        aboutWin.loadFile('./html/about.html');
                     },
                 }
             ]
         },
     ];
 
-    const menu = Menu.buildFromTemplate(menu_template)
+    const menu = Menu.buildFromTemplate(menuTemplate)
     Menu.setApplicationMenu(menu)
 
     // Renderer events ---------------------------------------------------------
     // The renderer asks for a "Save As" dialog
-    ipcMain.on('save_as', function (event, args) {
-        save_project(win);
+    ipcMain.on('saveAs', function (event, args) {
+        saveProject(win);
     });
 
     // Request for video import
-    ipcMain.on('vimport_req', function (event, args) {
-        import_vid(win);
+    ipcMain.on('vimportReq', function (event, args) {
+        importVid(win);
     });
 
     // Request for project load
-    ipcMain.on('load_req', function (event, args) {
-        load_project(win);
+    ipcMain.on('loadReq', function (event, args) {
+        loadProject(win);
     });
 
 };
@@ -166,7 +167,7 @@ app.on('window-all-closed', () => {
 });
 
 // Functions -------------------------------------------------------------------
-async function load_project(MainWindow) {
+async function loadProject(MainWindow) {
     const { dialog } = require('electron');
     let options = {
         title: "Load project",
@@ -185,12 +186,12 @@ async function load_project(MainWindow) {
         console.log({ filePaths })
 
         if (!filePaths.canceled) {
-            MainWindow.webContents.send('load_path', filePaths.filePaths[0]);
+            MainWindow.webContents.send('loadPath', filePaths.filePaths[0]);
         }
     });
 }
 
-async function save_project(MainWindow) {
+async function saveProject(MainWindow) {
     const { dialog } = require('electron');
     let options = {
         title: "Save project",
@@ -209,12 +210,15 @@ async function save_project(MainWindow) {
         console.log({ filePaths })
 
         if (!filePaths.canceled) {
-            MainWindow.webContents.send('save_path', filePaths.filePath);
+            if (filePaths.filePath.substring(filePaths.filePath.length - 3) != '.vl'){
+                filePaths.filePath += '.vl';
+            }
+            MainWindow.webContents.send('savePath', filePaths.filePath);
         }
     });
 }
 
-async function import_vid(MainWindow) {
+async function importVid(MainWindow) {
     const { dialog } = require('electron');
     let options = {
         title: "Import video",
