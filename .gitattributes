@@ -1,4 +1,4 @@
 # Make GitHub linguist ignore some files / directories as vendored to avoid statistics reflecting 3rd party code
 #   Font awsome
-css/font_awsome_all.css -linguist-vendored
+css/font_awsome_all.css linguist-vendored
 webfonts/** linguist-vendored
