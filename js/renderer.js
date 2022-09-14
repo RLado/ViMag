@@ -159,8 +159,8 @@ async function processSlices() {
     for (let i = 0; i < prj.items.length; i++) { // Level 1
         for (let j = 0; j < prj.items[i].items.length; j++) { // Level 2
             if (prj.items[i].items[j].type == 'slice' && !prj.items[i].items[j].processed) {
-                console.log(prj.items[i].path);
-                console.log(prj.items[i].items[j].coord);
+                //console.log(prj.items[i].path);
+                //console.log(prj.items[i].items[j].coord);
 
                 // Correct coords with original resolution
                 showVid(prj.items[i].name, prj.items[i].path);
@@ -220,6 +220,24 @@ async function processSlices() {
                 X = slice2patch64(X);
                 Y = slice2patch64(Y);
 
+                // --If the coordinates go out of bounds balance them
+                if (X[0] < 0) {
+                    X[1] -= X[0];
+                    X[0] = 0;
+                }
+                if (Y[0] < 0) {
+                    Y[1] -= Y[0];
+                    Y[0] = 0;
+                }
+                if (X[1] > video.videoWidth) {
+                    X[0] -= X[1] - video.videoWidth;
+                    X[1] = video.videoWidth;
+                }
+                if (Y[1] > video.videoHeight) {
+                    Y[0] -= Y[1] - video.videoHeight;
+                    Y[1] = video.videoHeight;
+                }
+
                 // --So... coord and dim are...
                 prj.items[i].items[j].winCoord = [X[0], Y[0]];
                 prj.items[i].items[j].winDim = [X[1] - X[0], Y[1] - Y[0]]; // W,H
@@ -255,7 +273,7 @@ async function processSlices() {
                         }
 
                         // Results callback
-                        console.log('Video crop results: %j', resultsV2f);
+                        //console.log('Video crop results: %j', resultsV2f);
                         prj.items[i].framerate = resultsV2f[0].split(',')[1];
                         let nframes = resultsV2f[0].split(',')[2];
                         nframes = nframes.slice(0, nframes.length - 1) - 1;
