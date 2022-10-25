@@ -267,3 +267,4 @@ trash/
 *.mkv
 *.vl
 *.code-workspace
+preferences.json

@@ -1,0 +1,51 @@
+.discreteButton {
+    border: 0px none #00000000;
+    background-color: #00000000;
+}
+
+.genericButton {
+    border: 0px none #00000000;
+    background-color: #474747;
+    color: #c5c5c5;
+    box-shadow: none;
+}
+
+.genericButton:hover {
+    border: 0px none #00000000;
+    background-color: #505050;
+    color: #c5c5c5;
+    box-shadow: none;
+}
+
+.genericChkbox {
+    background: #474747;
+    color: #205fac;
+}
+
+.bottomRightPlacement {
+    position: absolute;
+    bottom: 1%;
+    right: 5%;
+}
+
+.prefBackground {
+    position: absolute;
+    height: 92%;
+    width: 97%;
+    background-color: #b5b5b5;
+    border-radius: 25px;
+
+}
+
+/*Tab configuration*/
+.tab0 {
+    margin-left: 10px;
+}
+
+.tab1 {
+    margin-left: 20px;
+}
+
+.tab2 {
+    margin-left: 40px;
+}

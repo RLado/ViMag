@@ -102,6 +102,33 @@ const createWindow = () => {
             ]
         },
 
+        {
+            label: 'Edit',
+            submenu: [
+                {
+                    label: 'Preferences',
+                    click() {
+                        const aboutWin = new BrowserWindow({
+                            title: 'Preferences',
+                            width: 600,
+                            height: 800,
+                            icon: './img/icon.ico',
+                            resizable: false,
+                            fullscreenable: false,
+                            webPreferences: {
+                                nodeIntegration: true, // These arguments are now required since they are disabled by default for security reasons
+                                contextIsolation: false,
+                                devTools: !app.isPackaged,
+                            },
+                        });
+                        aboutWin.toggleDevTools(); //For debug
+                        aboutWin.removeMenu();
+                        aboutWin.loadFile('./html/preferences.html');
+                    },
+                }
+            ]
+        },
+
         /*{
             label: 'View',
             submenu: [

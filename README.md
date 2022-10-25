@@ -3,6 +3,16 @@
 
 Vision-based damage detection techinques can reduce sensor deployment costs while providing accurate, useful, and full-field readings of structural behaviour. Our work presents a video processing methodology and software toolbox that allows the processing of video data to obtain vibrational signatures of complex structures. Therefore, enabling the identification of very light structural damage in a controlled lab environament. The presented software toolbox is based on the use of state-of-the-art deep learning video motion magnification techniques. These techniques act like microscopes for motion, magnifying tiny movements on video sequences, to retreive seemingly invisible or almost imperceptible movements. Consequently, motion magnification may allow the naked eye to see a structure’s operating deflection shapes as they happened in real life. This vision-based technique may not be as precise as other contact-based or laser methods, but on the other hand, it offers an easy to use, efective, full-field, tool for structural health monitoring at a fraction of the cost.
 
+## Initial setup
+
+### Linux 
+- Run the packaged executable
+
+### Windows
+- Install Microsoft Visual C++ Redistributable from [here](https://aka.ms/vs/16/release/vc_redist.x64.exe) (if not installed already)
+- Run the packaged executable
+
+
 ## Use instrucctions
 
 To start working with VibroLab import a video file using the *File>Import video* menu or click the import icon in the left:

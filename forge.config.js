@@ -61,8 +61,8 @@ module.exports = {
             if (platform.platform === 'linux') {
                 // Move python files to the root of the package
                 fse.move(
-                    "./out/vibrolab_dev/vibrolab-linux-x64/resources/app/python", 
-                    "./out/vibrolab_dev/vibrolab-linux-x64/python"
+                    "./out/vibrolab_v0.1.2/vibrolab-linux-x64/resources/app/python", 
+                    "./out/vibrolab_v0.1.2/vibrolab-linux-x64/python"
                 )
             }
 
@@ -70,12 +70,12 @@ module.exports = {
             if (platform.platform === 'win32') {
                 // Move python files to the root of the package
                 fse.move(
-                    "./out/vibrolab_dev/vibrolab-win32-x64/resources/app/python", 
-                    "./out/vibrolab_dev/vibrolab-win32-x64/python"
+                    "./out/vibrolab_v0.1.2/vibrolab-win32-x64/resources/app/python", 
+                    "./out/vibrolab_v0.1.2/vibrolab-win32-x64/python"
                 )
             }
         }, 
     },
-    buildIdentifier: 'vibrolab_dev'
+    buildIdentifier: 'vibrolab_v0.1.2'
 }
 

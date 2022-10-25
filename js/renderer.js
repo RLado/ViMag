@@ -10,6 +10,8 @@ const os = require('os');
 const { PythonShell } = require('python-shell');
 const csvtojson = require("csvtojson");
 
+const preferences = require("../js/preferences.js");
+
 
 // Functions -------------------------------------------------------------------
 /**
@@ -155,10 +157,13 @@ async function processSlices() {
     document.getElementById("processSlicesBtn").innerHTML = '<i class="fa fa-sm fa-cog fa-spin"></i>';
     document.getElementById("processSlicesBtn").onclick = null;
 
+    // Reload preferences
+    pref = preferences.loadPreferences();
+
     // Do the processing
     for (let i = 0; i < prj.items.length; i++) { // Level 1
         for (let j = 0; j < prj.items[i].items.length; j++) { // Level 2
-            if (prj.items[i].items[j].type == 'slice' && !prj.items[i].items[j].processed) {
+            if (prj.items[i].items[j].type == 'slice' && (!prj.items[i].items[j].processed || pref.reprocess)) {
                 //console.log(prj.items[i].path);
                 //console.log(prj.items[i].items[j].coord);
 
@@ -289,7 +294,7 @@ async function processSlices() {
                                 '--mode', 'static',
                                 '-j', 1,
                                 '-b', 1,
-                                '-m', 20,
+                                '-m', pref.alpha,
                                 '--device', 'cpu',
                             ],
                         };
@@ -317,15 +322,40 @@ async function processSlices() {
                                 Math.round(prj.items[i].items[j].trueCoord[1][0] - prj.items[i].items[j].winCoord[0]),
                                 Math.round(prj.items[i].items[j].trueCoord[1][1] - prj.items[i].items[j].winCoord[1]),
                             ];
+                            // --Clamp coordinates to window dimension (Avoids rounding errors)
+                            if (sliceStartCoord[0] < 0) {
+                                sliceStartCoord[0] = 0;
+                            }
+                            else if (sliceStartCoord[0] >= prj.items[i].items[j].winDim[0]) {
+                                sliceStartCoord[0] = prj.items[i].items[j].winDim[0] - 1;
+                            }
+                            if (sliceStartCoord[1] < 0) {
+                                sliceStartCoord[1] = 0;
+                            }
+                            else if (sliceStartCoord[1] >= prj.items[i].items[j].winDim[1]) {
+                                sliceStartCoord[1] = prj.items[i].items[j].winDim[1] - 1;
+                            }
+                            if (sliceEndCoord[0] < 0) {
+                                sliceEndCoord[0] = 0;
+                            }
+                            else if (sliceEndCoord[0] >= prj.items[i].items[j].winDim[0]) {
+                                sliceEndCoord[0] = prj.items[i].items[j].winDim[0] - 1;
+                            }
+                            if (sliceEndCoord[1] < 0) {
+                                sliceEndCoord[1] = 0;
+                            }
+                            else if (sliceEndCoord[1] >= prj.items[i].items[j].winDim[1]) {
+                                sliceEndCoord[1] = prj.items[i].items[j].winDim[1] - 1;
+                            }
 
                             // --Run python slicer
                             let sliceFiles = fs.readdirSync(prj.items[i].items[j].pathVmm);
-                            for (let l = 0; l < sliceFiles.length; l++) {
+                            for (let l = sliceFiles.length - 1; l >= 0; l--) {
                                 if (sliceFiles[l].slice(-4) == '.png') {
                                     sliceFiles[l] = path.join(prj.items[i].items[j].pathVmm, sliceFiles[l]);
                                 }
                                 else {
-                                    sliceFiles.pop(l);
+                                    sliceFiles.splice(l, 1); // pop the item from the array
                                 }
                             }
                             //console.log({ sliceFiles });
@@ -386,6 +416,69 @@ async function processSlices() {
     // Stop the spinning icon and restore functionality
     document.getElementById("processSlicesBtn").innerHTML = '<i class="fa fa-sm fa-cog"></i>';
     document.getElementById("processSlicesBtn").onclick = function () { processSlices(); };
+}
+
+/**
+ * Proceses full video magnification. (Extremely computationally expensive)
+ */
+function fullVideoMag() {
+    const video = document.getElementById('video');
+
+    if (!prj.saved && prj.path == null) {
+        alert("The project must be saved before processing");
+        ipcRenderer.send('saveAs', null);
+        return null;
+    }
+
+    if (video.src === '' || video.src.includes('index.html')) {
+        console.log('Nothing to magnify');
+        return
+    }
+
+    let options = {
+        pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
+        scriptPath: '.',
+        args: [
+            '-i', video.src,
+            '--temp', path.join(prj.data, 'temp_' + vidIdDisp),
+            '-c', './python/STB-VMM/ckpt/ckpt_e49.pth.tar',
+            '-o', path.join(prj.data, vidIdDisp + '_x' + pref.fvmAlpha + '.webM'),
+            '-m', pref.fvmAlpha,
+            '--mode', 'static',
+            '-t', pref.tileSize,
+            '-j', 4,
+            '-b', 1,
+            '--device', 'cpu',
+        ],
+    };
+
+    console.log({ options });
+    PythonShell.run('python/tile_mag.py', options, function (errV2f, resultsV2f) {
+        if (errV2f) { // Error callback
+            throw errV2f;
+        }
+        // Import magnified video
+        console.log('Full video magnification done');
+        args = [path.join(prj.data, vidIdDisp + '_x' + pref.fvmAlpha + '.webM')]
+        for (let i = 0; i < args.length; i++) {
+            impVidNameTemp = sanitizeString(path.basename(args[i]).split('.')[0]);
+            // Check if importing two elements with the same name
+            if (prjExists(impVidNameTemp)) {
+                alert('Already created an element named: ' + impVidNameTemp);
+                //throw('Already created an element named: ' + impVidNameTemp);
+            }
+            else {
+                // Import elements
+                prj.items.push(new videoDatum(impVidNameTemp, args[i]));
+                showVid(impVidNameTemp, args[i]);
+
+                // Set project.saved to false
+                prj.saved = false;
+            }
+        }
+        updateAccordions();
+
+    });
 }
 
 /**
@@ -536,8 +629,8 @@ function updateDataTab() {
                             <p>
                                 <input type="checkbox" id="${prj.items[i].items[j].items[k].name}SmthChkbx" class="genericChkbox">
                                 <label for="${prj.items[i].items[j].items[k].name}SmthChkbx"> Smooth </label>
-                                <input id="${prj.items[i].items[j].items[k].name}SmthSlider" class="genericSlider" type="range" min="0" max="1" step="0.01" value="0.02" oninput="${prj.items[i].items[j].items[k].name}SmthSliderBox.value=${prj.items[i].items[j].items[k].name}SmthSlider.value">
-                                <input id="${prj.items[i].items[j].items[k].name}SmthSliderBox" class="genericBox" type="number" min="0" max="1" step="0.01" value="0.02" oninput="${prj.items[i].items[j].items[k].name}SmthSlider.value=${prj.items[i].items[j].items[k].name}SmthSliderBox.value">
+                                <input id="${prj.items[i].items[j].items[k].name}SmthSlider" class="genericSlider" type="range" min="0" max="1" step="0.01" value="0.95" oninput="${prj.items[i].items[j].items[k].name}SmthSliderBox.value=${prj.items[i].items[j].items[k].name}SmthSlider.value">
+                                <input id="${prj.items[i].items[j].items[k].name}SmthSliderBox" class="genericBox" type="number" min="0" max="1" step="0.01" value="0.95" oninput="${prj.items[i].items[j].items[k].name}SmthSlider.value=${prj.items[i].items[j].items[k].name}SmthSliderBox.value">
                             </p>
                             <p>
                                 <canvas id="${prj.items[i].items[j].items[k].name}Chart" class="graphFormat"></canvas>
@@ -726,8 +819,10 @@ function updateDataTab() {
                     }, false);
                     document.getElementById(`${prj.items[i].items[j].items[k].name}SmthSlider`).addEventListener('change', function () {
                         prj.items[i].items[j].items[k].smthSlider = document.getElementById(`${prj.items[i].items[j].items[k].name}SmthSlider`).value;
+                        prj.items[i].items[j].items[k].smthSliderBox = document.getElementById(`${prj.items[i].items[j].items[k].name}SmthSliderBox`).value;
                     }, false);
                     document.getElementById(`${prj.items[i].items[j].items[k].name}SmthSliderBox`).addEventListener('change', function () {
+                        prj.items[i].items[j].items[k].smthSlider = document.getElementById(`${prj.items[i].items[j].items[k].name}SmthSlider`).value;
                         prj.items[i].items[j].items[k].smthSliderBox = document.getElementById(`${prj.items[i].items[j].items[k].name}SmthSliderBox`).value;
                     }, false);
 
@@ -1204,7 +1299,7 @@ function hideSbCtxMenu() {
 
 /**
  * Open NavBar context menu (rename, delete)
- * @param   {String} elem Element name as appears in prj
+ * @param   {HTMLElement} elem HTML element
  */
 function sbCtxRightClick(elem) {
     if (document.getElementById("sidebarCxtMenu").style.display == "block") {
@@ -1222,15 +1317,17 @@ function sbCtxRightClick(elem) {
         </ul>`;
 
         // Place menu on top of clicked element
+        let viewportOffset = elem.getBoundingClientRect();
         menu.style.display = 'block';
+        menu.style.position = 'fixed';
         menu.style.left = elem.offsetWidth + "px";
-        menu.style.top = elem.offsetTop + "px";
+        menu.style.top = viewportOffset.top + "px";
     }
 }
 
 /**
  * Return the prj coordinates of an element given it's name
- * @param   {String} elem Element name as appears in prj
+ * @param   {String} name Element name as appears in prj
  * @return  {Array}     An array containing the 3 coordinates [i,j,k] of the 
  *                      element searched. If a coordinate position does not 
  *                      exist returns -1 in that position
@@ -1446,7 +1543,7 @@ class signal {
 }
 
 class FFT {
-    constructor(name, csv, radioAvg = false, radioLub = false, radioUlb = true, smthChkbx = false, smthSlider = 0.02, smthSliderBox = 0.02, cropStartBox = 1, cropStopBox = null) {
+    constructor(name, csv, radioAvg = false, radioLub = false, radioUlb = true, smthChkbx = false, smthSlider = 0.95, smthSliderBox = 0.95, cropStartBox = 1, cropStopBox = null) {
         this.type = 'FFT';
         this.name = name;
         this.csv = csv;
@@ -1606,6 +1703,14 @@ ipcRenderer.on('loadPath', function (event, args) {
 let togglenavC = true;
 let toggledatatabC = true;
 let prj = new prjDict('newProject');
+let pref = preferences.loadPreferences();
+// Update button visibility (requires restart)
+if (pref.fullVideoMagEnable) {
+    document.getElementById("fullVideoMagButton").style.visibility = "visible";
+}
+else {
+    document.getElementById("fullVideoMagButton").style.visibility = "hidden";
+}
 
 // Slice selector
 let sliceState = false;
