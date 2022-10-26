@@ -382,28 +382,37 @@ async function processSlices() {
                                 ],
                             };
 
-                            PythonShell.run('python/TempSlice/tempslice.py', options, function (errSlice, resultsSlice) {
-                                if (errSlice) { // Error callback
-                                    // Stop the spinning icon and restore functionality (if it was)
-                                    document.getElementById("processSlicesBtn").innerHTML = '<i class="fa fa-sm fa-cog"></i>';
-                                    document.getElementById("processSlicesBtn").onclick = function () { processSlices(); };
-
-                                    //console.log( {resultsSlice} );
-                                    throw errSlice;
-                                }
-
-                                // Results callback
-                                console.log(`Slice for ${prj.items[i].items[j].name} completed`);
-
-                                // Flag as processed
-                                prj.items[i].items[j].processed = true;
-
-                                // Update dataTab
-                                updateDataTab();
+                            // Check if coordinates are invalid (too small of a slice)
+                            if (sliceStartCoord[0] === sliceEndCoord[0] && sliceStartCoord[1] === sliceEndCoord[1]){
+                                console.log(`${prj.items[i].items[j].name} is of size 0. Ignoring`);
 
                                 // Resolve promise
-                                resolve({ success: true });
-                            });
+                                resolve({ success: false });
+                            }
+                            else {
+                                PythonShell.run('python/TempSlice/tempslice.py', options, function (errSlice, resultsSlice) {
+                                    if (errSlice) { // Error callback
+                                        // Stop the spinning icon and restore functionality (if it was)
+                                        document.getElementById("processSlicesBtn").innerHTML = '<i class="fa fa-sm fa-cog"></i>';
+                                        document.getElementById("processSlicesBtn").onclick = function () { processSlices(); };
+    
+                                        //console.log( {resultsSlice} );
+                                        throw errSlice;
+                                    }
+    
+                                    // Results callback
+                                    console.log(`Slice for ${prj.items[i].items[j].name} completed`);
+    
+                                    // Flag as processed
+                                    prj.items[i].items[j].processed = true;
+    
+                                    // Update dataTab
+                                    updateDataTab();
+    
+                                    // Resolve promise
+                                    resolve({ success: true });
+                                });
+                            }
 
                         });
 
