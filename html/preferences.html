@@ -12,9 +12,19 @@
 
 <body onload="readPref()">
     <div name="Preferences" class="prefBackground">
+        <H4 class="tab0">User interface</H4>
+        <p class="tab1">
+            Slice color: &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp 
+            <input id="sliceColor" type="color" value="#0000FF"/>
+        </p>
+        <p class="tab1">
+            Slice font color: &nbsp 
+            <input id="sliceFontColor" type="color" value="#000000"/>
+        </p>
+
         <H4 class="tab0">Motion magnification computing</H4>
         <p class="tab1">
-            Magnification Factor:
+            Magnification Factor: &nbsp
             <select id="MagFactorCombobox" class="genericButton">
                 <option value=0>0</option>
                 <option value=5>5</option>
@@ -50,7 +60,7 @@
             <input type="checkbox" id="fullVideoMagChkbox" class="genericChkbox">
         </p>
         <p class="tab1">
-            Magnification Factor:
+            Magnification Factor: &nbsp
             <select id="FullMagFactorCombobox" class="genericButton">
                 <option value=0>0</option>
                 <option value=5>5</option>
@@ -76,7 +86,8 @@
             </select>
         </p>
         <p class="tab1">
-            Tile size:
+            Tile size: &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+            &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
             <select id="TileSizeCombobox" class="genericButton">
                 <option value=64>64</option>
                 <option value=128>128</option>

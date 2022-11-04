@@ -4,6 +4,10 @@ const fs = require('fs');
 
 class preferences {
     constructor() {
+        // User interface
+        this.sliceColor = '#0000FF';
+        this.sliceFontColor = '#000000';
+
         // Motion magnification compute
         this.alpha = 20;
         this.reprocess = false;
@@ -40,6 +44,10 @@ function savePreferences() {
 
     // Get preferences
 
+    // User interface
+    pref.sliceColor = document.getElementById('sliceColor').value;
+    pref.sliceFontColor = document.getElementById('sliceFontColor').value;
+
     // Motion magnification compute preferences
     pref.alpha = document.getElementById('MagFactorCombobox').value;
     pref.reprocess = document.getElementById('reprocessChkbox').checked;
@@ -69,14 +77,19 @@ function savePreferences() {
 function readPref() {
     let pref = loadPreferences();
 
-    // Read and display alpha
+    // User interface
+    document.getElementById('sliceColor').value = pref.sliceColor;
+    document.getElementById('sliceFontColor').value = pref.sliceFontColor;
+
+    // Motion magnification computing
+    // -- Read and display alpha
     for (var i = 0; i < document.getElementById('MagFactorCombobox').length; i++) {
         if (document.getElementById('MagFactorCombobox').options[i].value == pref.alpha) {
             document.getElementById('MagFactorCombobox').selectedIndex = i;
         }
     }
 
-    // Read and display reprocess checkbox
+    // -- Read and display reprocess checkbox
     document.getElementById('reprocessChkbox').checked = pref.reprocess;
 
     // Read and display full video motion magnifiaction compute preferences

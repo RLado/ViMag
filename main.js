@@ -149,8 +149,8 @@ const createWindow = () => {
                     click() {
                         const aboutWin = new BrowserWindow({
                             title: 'About',
-                            width: 340,
-                            height: 215,
+                            width: 413,
+                            height: 255,
                             icon: './img/icon.ico',
                             resizable: false,
                             fullscreenable: false,
@@ -180,6 +180,11 @@ const createWindow = () => {
     // Request for project load
     ipcMain.on('loadReq', function (event, args) {
         loadProject(win);
+    });
+
+    // Request for data export
+    ipcMain.on('dexportReq', function (event, args) {
+        exportData(win);
     });
 
 };
@@ -265,6 +270,30 @@ async function importVid(MainWindow) {
 
         if (!filePaths.canceled) {
             MainWindow.webContents.send('vimport', filePaths.filePaths);
+        }
+    });
+}
+
+async function exportData(MainWindow) {
+    const { dialog } = require('electron');
+    let options = {
+        title: "Export data",
+        defaultPath: ".",
+        buttonLabel: "Export",
+
+        filters: [
+            { name: 'Text CSV', extensions: ['csv'] },
+            { name: 'All Files', extensions: ['*'] }
+        ],
+        properties: ['saveFile']
+    };
+
+    dialog.showSaveDialog(MainWindow, options).then((filePaths) => {
+        console.log('Export dialog')
+        console.log({ filePaths })
+
+        if (!filePaths.canceled) {
+            MainWindow.webContents.send('dexport', filePaths.filePath);
         }
     });
 }

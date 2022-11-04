@@ -71,6 +71,7 @@ function setPtSlice(e) {
  * Draw slices on top of the video canvas
  */
 function drawSlices() {
+    pref = preferences.loadPreferences();
     const video = document.getElementById('video');
 
     if (vidIdDisp != '') {
@@ -88,11 +89,19 @@ function drawSlices() {
 
         console.log('Drawing slices');
         for (let i = 0; i < prj.items[target[0]].items.length; i++) {
+            // Draw slices
             ctx.beginPath();
-            ctx.lineWidth = "2";
-            ctx.strokeStyle = "red";
+            ctx.lineWidth = '2';
+            ctx.strokeStyle = pref.sliceColor;
             ctx.moveTo(prj.items[target[0]].items[i].coord[0][0] * videoCoords.width, prj.items[target[0]].items[i].coord[0][1] * videoCoords.height);
             ctx.lineTo(prj.items[target[0]].items[i].coord[1][0] * videoCoords.width, prj.items[target[0]].items[i].coord[1][1] * videoCoords.height);
+
+            // Draws labels
+            ctx.font = '14px Helvetica';
+            ctx.fillStyle = pref.sliceFontColor;
+            ctx.fillText(prj.items[target[0]].items[i].name, prj.items[target[0]].items[i].coord[1][0] * videoCoords.width, prj.items[target[0]].items[i].coord[1][1] * videoCoords.height);
+
+            // Actually draw on the canvas
             ctx.stroke();
         }
     }
@@ -383,7 +392,7 @@ async function processSlices() {
                             };
 
                             // Check if coordinates are invalid (too small of a slice)
-                            if (sliceStartCoord[0] === sliceEndCoord[0] && sliceStartCoord[1] === sliceEndCoord[1]){
+                            if (sliceStartCoord[0] === sliceEndCoord[0] && sliceStartCoord[1] === sliceEndCoord[1]) {
                                 console.log(`${prj.items[i].items[j].name} is of size 0. Ignoring`);
 
                                 // Resolve promise
@@ -395,20 +404,20 @@ async function processSlices() {
                                         // Stop the spinning icon and restore functionality (if it was)
                                         document.getElementById("processSlicesBtn").innerHTML = '<i class="fa fa-sm fa-cog"></i>';
                                         document.getElementById("processSlicesBtn").onclick = function () { processSlices(); };
-    
+
                                         //console.log( {resultsSlice} );
                                         throw errSlice;
                                     }
-    
+
                                     // Results callback
                                     console.log(`Slice for ${prj.items[i].items[j].name} completed`);
-    
+
                                     // Flag as processed
                                     prj.items[i].items[j].processed = true;
-    
+
                                     // Update dataTab
                                     updateDataTab();
-    
+
                                     // Resolve promise
                                     resolve({ success: true });
                                 });
@@ -532,7 +541,8 @@ function updateDataTab() {
                     if (prj.items[i].items[j].items[k].type == 'signal') { // Signals
                         // Add canvas
                         dataTabContents.innerHTML += `
-                            <p>Signal:</p>
+                            <p>Signal: <button class="genericButton" onclick="dexportReq('${prj.items[i].items[j].items[k].csv.replaceAll('\\', '\\\\')}')"> Export </button>
+                            </p>
                             <p>
                                 <canvas id="${prj.items[i].items[j].items[k].name}Chart" class="graphFormatLegend"></canvas>
                             </p>
@@ -625,7 +635,8 @@ function updateDataTab() {
 
                     if (prj.items[i].items[j].items[k].type == 'FFT') { // FFTs
                         dataTabContents.innerHTML += `
-                            <p>FFT: <button id="${prj.items[i].items[j].items[k].name}ComputeBtn" class="genericButton"> Compute </button></p>
+                            <p>FFT: <button id="${prj.items[i].items[j].items[k].name}ComputeBtn" class="genericButton"> Compute </button> <button class="genericButton" onclick="dexportReq('${prj.items[i].items[j].items[k].csv.replaceAll('\\', '\\\\')}')"> Export </button>
+                            </p>
                             <p>
                                 Data: 
                                 <input type="radio" name="${prj.items[i].items[j].items[k].name}DataCol" class="genericRadio" value="avg" id="${prj.items[i].items[j].items[k].name}RadioAvg">
@@ -1706,6 +1717,36 @@ ipcRenderer.on('loadPath', function (event, args) {
     load(args);
 });
 
+// Export data
+function dexportReq(file) {
+    if (fs.existsSync(file)) {
+        ipcRenderer.send('dexportReq', null);
+        edPath = file;
+    }
+    else {
+        alert('Please compute FFT first');
+    }
+
+}
+
+ipcRenderer.on('dexport', function (event, args) {
+    console.log(`Exporting: ${args}`);
+
+    if (args.substring(args.length - 4) != '.csv') {
+        args += '.csv';
+    }
+
+    // File destination.txt will be created or overwritten by default.
+    fs.copyFile(edPath, args, (err) => {
+        if (err) {
+            throw err;
+        }
+    }
+    );
+
+    // Empty edPath
+    edPath = '';
+});
 
 // Main ------------------------------------------------------------------------
 // State variables
@@ -1733,6 +1774,9 @@ document.onclick = hideSbCtxMenu;
 
 // Slice slector initialization
 document.getElementById("play-pause").style.visibility = "hidden";
+
+// Export data PATH
+let edPath = '';
 
 // Initialize UI
 updateAccordions();
