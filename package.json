@@ -1,6 +1,6 @@
 {
   "name": "vibrolab",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "A video vibration toolbox",
   "main": "main.js",
   "scripts": {
