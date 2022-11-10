@@ -5,6 +5,7 @@ const dialogs = Dialogs();
 
 const path = require('path');
 const fs = require('fs');
+const fse = require('fs-extra');
 const os = require('os');
 
 const { PythonShell } = require('python-shell');
@@ -950,8 +951,6 @@ function updateDataTab() {
                 ],
             };
 
-            console.log({ options });
-
             PythonShell.run('python/TempSlice/slice2csv.py', options, function (errS2csv, resultsS2csv) {
                 if (errS2csv) {
                     // Reset
@@ -1641,11 +1640,13 @@ function vimportReq() { // Request video import from button
 
 // Save project
 ipcRenderer.on('savePath', function (event, args) { // Save as
-    prj.saved = true;
+    // Store current project values
+    let oldPath = prj.path;
+    let oldData = prj.data;
+
+    // Change project name and path
     prj.name = path.basename(args);
     prj.path = args; // Set project.path (to avoid always saving as)
-
-    console.log({ prj });
 
     // Update prjData
     prj.data = path.join(path.dirname(args), path.basename(args).split('.')[0] + 'Data');
@@ -1653,19 +1654,34 @@ ipcRenderer.on('savePath', function (event, args) { // Save as
     // Serialize project object
     let prjDictStr = JSON.stringify(prj);
 
-    // Write to file
-    fs.mkdir(path.dirname(args) + '/' + path.basename(args).split('.')[0] + 'Data', (err) => {
-        if (err) {
-            return console.error(err);
-        }
-    });
-    fs.writeFile(args, prjDictStr, 'utf8', function (err) {
+    // Correct paths if needed
+    if (oldData !== '') {
+        prjDictStr = prjDictStr.replaceAll(oldPath, args);
+        prjDictStr = prjDictStr.replaceAll(oldData, path.join(path.dirname(args), path.basename(args).split('.')[0] + 'Data'));
+
+        // If there was any project data copy it into the prjData directory
+        fse.copySync(oldData, prj.data);
+    }
+    else {
+        fs.mkdir(path.dirname(args) + '/' + path.basename(args).split('.')[0] + 'Data', (err) => {
+            if (err) {
+                return console.error(err);
+            }
+        });
+    }
+
+    // Write to file   
+    fs.writeFileSync(args, prjDictStr, 'utf8', function (err) {
         if (err) {
             return console.log(err);
         } else {
             console.log('Saved');
+            prj.saved = true;
         }
     });
+
+    // Load
+    prj = JSON.parse(prjDictStr);
 });
 
 function save() {
@@ -1696,9 +1712,17 @@ ipcRenderer.on('save', function (event, args) { // Save
 
 // Load project
 function load(args) {
+    // Load JSON .vl file
     let prjDictStr = fs.readFileSync(args, 'utf-8').toString();
     prj = JSON.parse(prjDictStr);
-    console.log({ prj });
+
+    // Correct paths if needed
+    if (prj.path !== args) {
+        prjDictStr = prjDictStr.replaceAll(prj.path, args);
+        prjDictStr = prjDictStr.replaceAll(prj.data, path.join(path.dirname(args), path.basename(args).split('.')[0] + 'Data'));
+        // Reload
+        prj = JSON.parse(prjDictStr);
+    }
     updateAccordions();
 
     // Clean UI
