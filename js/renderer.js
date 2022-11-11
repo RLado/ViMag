@@ -1655,8 +1655,10 @@ ipcRenderer.on('savePath', function (event, args) { // Save as
 
     // Correct paths if needed
     if (oldData !== '') {
+        prjDictStr = prjDictStr.replaceAll('\\\\', '\\'); // Required hack for Windows
         prjDictStr = prjDictStr.replaceAll(oldPath, args);
         prjDictStr = prjDictStr.replaceAll(oldData, path.join(path.dirname(args), path.basename(args).split('.')[0] + 'Data'));
+        prjDictStr = prjDictStr.replaceAll('\\', '\\\\'); // Required hack for Windows
 
         // If there was any project data copy it into the prjData directory
         fs.copySync(oldData, prj.data);
@@ -1717,8 +1719,10 @@ function load(args) {
 
     // Correct paths if needed
     if (prj.path !== args) {
+        prjDictStr = prjDictStr.replaceAll('\\\\', '\\'); // Required hack for Windows
         prjDictStr = prjDictStr.replaceAll(prj.path, args);
         prjDictStr = prjDictStr.replaceAll(prj.data, path.join(path.dirname(args), path.basename(args).split('.')[0] + 'Data'));
+        prjDictStr = prjDictStr.replaceAll('\\', '\\\\'); // Required hack for Windows
         // Reload
         prj = JSON.parse(prjDictStr);
     }
