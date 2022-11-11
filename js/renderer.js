@@ -4,8 +4,7 @@ let Dialogs = require('dialogs');
 const dialogs = Dialogs();
 
 const path = require('path');
-const fs = require('fs');
-const fse = require('fs-extra');
+const fs = require('fs-extra');
 const os = require('os');
 
 const { PythonShell } = require('python-shell');
@@ -1660,7 +1659,7 @@ ipcRenderer.on('savePath', function (event, args) { // Save as
         prjDictStr = prjDictStr.replaceAll(oldData, path.join(path.dirname(args), path.basename(args).split('.')[0] + 'Data'));
 
         // If there was any project data copy it into the prjData directory
-        fse.copySync(oldData, prj.data);
+        fs.copySync(oldData, prj.data);
     }
     else {
         fs.mkdir(path.dirname(args) + '/' + path.basename(args).split('.')[0] + 'Data', (err) => {
