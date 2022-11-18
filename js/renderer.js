@@ -919,6 +919,8 @@ function updateDataTab() {
             for (let i = 0; i < prj.items[elem[0]].items[elem[1]].items.length; i++) {
                 if (prj.items[elem[0]].items[elem[1]].items[i].type == 'signal') {
                     hasSignal = true;
+                    // Update signal CSV source for bwImg
+                    prj.items[elem[0]].items[elem[1]].items[i].csv = `${bwImg}.csv`;
                 }
                 if (prj.items[elem[0]].items[elem[1]].items[i].type == 'FFT') {
                     hasFft = true;
@@ -932,8 +934,15 @@ function updateDataTab() {
                 prj.saved = false;
             }
             if (!hasFft) {
+                let signalIndex = null; // Search for signal component in the item array (generally 0)
+                for (let i = 0; i < prj.items[elem[0]].items[elem[1]].items.length; i++) {
+                    if (prj.items[elem[0]].items[elem[1]].items[i].type == 'signal') {
+                        signalIndex = i;
+                        break;
+                    }
+                }
                 // Add new FFT object
-                prj.items[elem[0]].items[elem[1]].items.push(new FFT(`${prj.items[elem[0]].items[elem[1]].name}_FFT`, `${prj.items[elem[0]].items[elem[1]].items[0].csv}_fft.csv`, cropStopBox = prj.items[elem[0]].framerate / 2));
+                prj.items[elem[0]].items[elem[1]].items.push(new FFT(`${prj.items[elem[0]].items[elem[1]].name}_FFT`, `${prj.items[elem[0]].items[elem[1]].items[signalIndex].csv}_fft.csv`, cropStopBox = prj.items[elem[0]].framerate / 2));
 
                 // Set project.saved to false
                 prj.saved = false;
@@ -1030,9 +1039,16 @@ function updateDataTab() {
 
         // Search for signal component in the item array (generally 0)
         let signalIndex = null;
+        let FFTIndex = null;
         for (let i = 0; i < prj.items[elem[0]].items[elem[1]].items.length; i++) {
             if (prj.items[elem[0]].items[elem[1]].items[i].type == 'signal') {
                 signalIndex = i;
+                break;
+            }
+        }
+        for (let i = 0; i < prj.items[elem[0]].items[elem[1]].items.length; i++) {
+            if (prj.items[elem[0]].items[elem[1]].items[i].type == 'FFT') {
+                FFTIndex = i;
                 break;
             }
         }
@@ -1040,6 +1056,10 @@ function updateDataTab() {
             //console.log("No signal found in slice. Could not calculate FFT.");
             alert('No signal found. Could not calculate FFT.');
             return null;
+        }
+        else {
+            // Update FFT CSV source for bwImg
+            prj.items[elem[0]].items[elem[1]].items[FFTIndex].csv = `${prj.items[elem[0]].items[elem[1]].items[signalIndex].csv}_fft.csv`;
         }
 
         if (document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}RadioAvg`).checked) {
@@ -1573,22 +1593,6 @@ class FFT {
         this.smthSliderBox = smthSliderBox;
         this.cropStartBox = cropStartBox;
         this.cropStopBox = cropStopBox;
-    }
-}
-
-class signalGraph {
-    constructor(name, sources) {
-        this.type = 'signalGraph';
-        this.name = name;
-        this.sources = sources;
-    }
-}
-
-class FFTGraph {
-    constructor(name, sources) {
-        this.type = 'FFTGraph';
-        this.name = name;
-        this.sources = sources;
     }
 }
 

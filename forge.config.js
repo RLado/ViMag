@@ -61,8 +61,8 @@ module.exports = {
             if (platform.platform === 'linux') {
                 // Move python files to the root of the package
                 fse.move(
-                    "./out/vibrolab_v0.1.4/vibrolab-linux-x64/resources/app/python", 
-                    "./out/vibrolab_v0.1.4/vibrolab-linux-x64/python"
+                    "./out/vibrolab_v0.1.5/vibrolab-linux-x64/resources/app/python", 
+                    "./out/vibrolab_v0.1.5/vibrolab-linux-x64/python"
                 );
             }
 
@@ -70,20 +70,20 @@ module.exports = {
             if (platform.platform === 'win32') {
                 // Move python files to the root of the package
                 fse.moveSync(
-                    "./out/vibrolab_v0.1.4/vibrolab-win32-x64/resources/app/python", 
-                    "./out/vibrolab_v0.1.4/vibrolab-win32-x64/python"
+                    "./out/vibrolab_v0.1.5/vibrolab-win32-x64/resources/app/python", 
+                    "./out/vibrolab_v0.1.5/vibrolab-win32-x64/python"
                 );
                 fse.copySync(
-                    "./out/vibrolab_v0.1.4/vibrolab-win32-x64/python/interpreter/externals/tcltk-8.6.12.0/amd64/lib/tcl8.6",
-                    "./out/vibrolab_v0.1.4/vibrolab-win32-x64/python/interpreter/PCbuild/lib/tcl8.6"
+                    "./out/vibrolab_v0.1.5/vibrolab-win32-x64/python/interpreter/externals/tcltk-8.6.12.0/amd64/lib/tcl8.6",
+                    "./out/vibrolab_v0.1.5/vibrolab-win32-x64/python/interpreter/PCbuild/lib/tcl8.6"
                 );
                 fse.copySync(
-                    "./out/vibrolab_v0.1.4/vibrolab-win32-x64/python/interpreter/externals/tcltk-8.6.12.0/amd64/lib/tk8.6",
-                    "./out/vibrolab_v0.1.4/vibrolab-win32-x64/python/interpreter/PCbuild/lib/tcl8.6/tk8.6"
+                    "./out/vibrolab_v0.1.5/vibrolab-win32-x64/python/interpreter/externals/tcltk-8.6.12.0/amd64/lib/tk8.6",
+                    "./out/vibrolab_v0.1.5/vibrolab-win32-x64/python/interpreter/PCbuild/lib/tcl8.6/tk8.6"
                 );
             }
         }, 
     },
-    buildIdentifier: 'vibrolab_v0.1.4'
+    buildIdentifier: 'vibrolab_v0.1.5'
 }
 
