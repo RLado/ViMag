@@ -14,15 +14,15 @@ call .\PCbuild\build.bat
 
 rem Create a venv
 echo "Create a venv"
-call .\python.bat -m venv --copies vibrolab_venv
-ren .\vibrolab_venv\Scripts\ bin
-call .\vibrolab_venv\bin\activate.bat
-call .\vibrolab_venv\bin\pip.exe install --upgrade pip
-call .\vibrolab_venv\bin\pip.exe install -r ../STB-VMM/requirements.txt
-call .\vibrolab_venv\bin\pip.exe install -r ../TempSlice/requirements.txt
-call .\vibrolab_venv\bin\pip.exe install -r ../requirements.txt
+call .\python.bat -m venv --copies ViMag_venv
+ren .\ViMag_venv\Scripts\ bin
+call .\ViMag_venv\bin\activate.bat
+call .\ViMag_venv\bin\pip.exe install --upgrade pip
+call .\ViMag_venv\bin\pip.exe install -r ../STB-VMM/requirements.txt
+call .\ViMag_venv\bin\pip.exe install -r ../TempSlice/requirements.txt
+call .\ViMag_venv\bin\pip.exe install -r ../requirements.txt
 
 rem Deactivate venv and go back
 echo "Deactivate venv and go back"
-call .\vibrolab_venv\bin\deactivate.bat
+call .\ViMag_venv\bin\deactivate.bat
 cd ..\..

@@ -266,7 +266,7 @@ async function processSlices() {
                 // Split video into frames
                 let originalStats;
                 let options = {
-                    pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
+                    pythonPath: 'python/interpreter/ViMag_venv/bin/python',
                     args: [
                         '-i', prj.items[i].path,
                         '-o', prj.items[i].items[j].pathOriginal,
@@ -294,7 +294,7 @@ async function processSlices() {
 
                         // Magnify the cut video results
                         options = {
-                            pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
+                            pythonPath: 'python/interpreter/ViMag_venv/bin/python',
                             args: [
                                 '--load_ckpt', './python/STB-VMM/ckpt/ckpt_e49.pth.tar',
                                 '--save_dir', prj.items[i].items[j].pathVmm,
@@ -382,7 +382,7 @@ async function processSlices() {
                             });
 
                             options = {
-                                pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
+                                pythonPath: 'python/interpreter/ViMag_venv/bin/python',
                                 args: [
                                     '-s', sliceStartCoord[0], sliceStartCoord[1],
                                     '-e', sliceEndCoord[0], sliceEndCoord[1],
@@ -454,7 +454,7 @@ function fullVideoMag() {
     }
 
     let options = {
-        pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
+        pythonPath: 'python/interpreter/ViMag_venv/bin/python',
         scriptPath: '.',
         args: [
             '-i', video.src,
@@ -949,7 +949,7 @@ function updateDataTab() {
             }
 
             let options = {
-                pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
+                pythonPath: 'python/interpreter/ViMag_venv/bin/python',
                 args: [
                     '-u', prj.items[elem[0]].items[elem[1]].ptColorThrhdUp[0], prj.items[elem[0]].items[elem[1]].ptColorThrhdUp[1],
                     '-l', prj.items[elem[0]].items[elem[1]].ptColorThrhdLow[0], prj.items[elem[0]].items[elem[1]].ptColorThrhdLow[1],
@@ -996,7 +996,7 @@ function updateDataTab() {
 
         if (document.getElementById(`${prj.items[elem[0]].items[elem[1]].name}Chkbx`).checked) { // BW threshold
             let options = {
-                pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
+                pythonPath: 'python/interpreter/ViMag_venv/bin/python',
                 args: [
                     '-t', document.getElementById(`${prj.items[elem[0]].items[elem[1]].name}BwRangeSliderBox`).value,
                     '-i', `${prj.items[elem[0]].items[elem[1]].pathSlice}_slice.png`,
@@ -1064,7 +1064,7 @@ function updateDataTab() {
 
         if (document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}RadioAvg`).checked) {
             options = {
-                pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
+                pythonPath: 'python/interpreter/ViMag_venv/bin/python',
                 args: [
                     '-f', `${prj.items[elem[0]].framerate}`,
                     '-i', `${prj.items[elem[0]].items[elem[1]].items[signalIndex].csv}`,
@@ -1077,7 +1077,7 @@ function updateDataTab() {
         }
         else if (document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}RadioLub`).checked) {
             options = {
-                pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
+                pythonPath: 'python/interpreter/ViMag_venv/bin/python',
                 args: [
                     '-f', `${prj.items[elem[0]].framerate}`,
                     '-i', `${prj.items[elem[0]].items[elem[1]].items[signalIndex].csv}`,
@@ -1090,7 +1090,7 @@ function updateDataTab() {
         }
         else if (document.getElementById(`${prj.items[elem[0]].items[elem[1]].items[elem[2]].name}RadioUlb`).checked) {
             options = {
-                pythonPath: 'python/interpreter/vibrolab_venv/bin/python',
+                pythonPath: 'python/interpreter/ViMag_venv/bin/python',
                 args: [
                     '-f', `${prj.items[elem[0]].framerate}`,
                     '-i', `${prj.items[elem[0]].items[elem[1]].items[signalIndex].csv}`,

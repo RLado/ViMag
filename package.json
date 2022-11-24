@@ -1,6 +1,6 @@
 {
-  "name": "vibrolab",
-  "version": "0.1.5",
+  "name": "vimag",
+  "version": "0.1.6",
   "description": "A video vibration toolbox",
   "main": "main.js",
   "scripts": {
@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RLado/Vibrolab.git"
+    "url": "git+https://github.com/RLado/ViMag.git"
   },
   "keywords": [
     "MotionMagnification",
@@ -23,21 +23,21 @@
   "author": "Ricard Lado",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/RLado/Vibrolab/issues"
+    "url": "https://github.com/RLado/ViMag/issues"
   },
-  "homepage": "https://github.com/RLado/Vibrolab#readme",
+  "homepage": "https://github.com/RLado/ViMag#readme",
   "devDependencies": {
-    "@electron-forge/cli": "^6.0.0-beta.64",
-    "@electron-forge/maker-flatpak": "^6.0.0-beta.65",
-    "@electron-forge/maker-squirrel": "^6.0.0-beta.64",
-    "@electron-forge/maker-zip": "^6.0.0-beta.64",
-    "electron": "^19.0.8"
+    "@electron-forge/cli": "^6.0.0",
+    "@electron-forge/maker-flatpak": "^6.0.0",
+    "@electron-forge/maker-squirrel": "^6.0.0",
+    "@electron-forge/maker-zip": "^6.0.0",
+    "electron": "^v21.3.0"
   },
   "dependencies": {
-    "fs-extra": "^10.1.0",
     "chart.js": "^3.8.0",
     "csvtojson": "^2.0.10",
     "dialogs": "git://github.com/RLado/dialogs_js.git",
+    "fs-extra": "^10.1.0",
     "python-shell": "^3.0.1"
   },
   "config": {

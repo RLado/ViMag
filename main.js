@@ -22,7 +22,7 @@ include-system-site-packages = false
 version = 3.10.6
 `;
 }
-fs.writeFile(path.join(process.cwd(), 'python/interpreter/vibrolab_venv/pyvenv.cfg'), pyvenvContent, err => {
+fs.writeFile(path.join(process.cwd(), 'python/interpreter/ViMag_venv/pyvenv.cfg'), pyvenvContent, err => {
     if (err) {
         console.error(err);
     }
@@ -36,7 +36,7 @@ app.getFileIcon('./img/icon.ico');
 // Define main window
 const createWindow = () => {
     const win = new BrowserWindow({
-        title: 'VibroLab',
+        title: 'ViMag',
         width: 1200,
         height: 720,
         icon: './img/icon.ico',
@@ -207,7 +207,7 @@ async function loadProject(MainWindow) {
         buttonLabel: "Load",
 
         filters: [
-            { name: 'VibroLab projects', extensions: ['vl'] },
+            { name: 'ViMag projects', extensions: ['vl'] },
             { name: 'All Files', extensions: ['*'] }
         ],
         properties: ['openFile']
@@ -231,7 +231,7 @@ async function saveProject(MainWindow) {
         buttonLabel: "Save As",
 
         filters: [
-            { name: 'VibroLab projects', extensions: ['vl'] },
+            { name: 'ViMag projects', extensions: ['vl'] },
             { name: 'All Files', extensions: ['*'] }
         ],
         properties: ['saveFile']
