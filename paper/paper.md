@@ -30,7 +30,7 @@ Recent developments in computer vision have brought about a new set of technique
 
 Vision-based damage detection techniques can reduce sensor deployment costs while providing accurate, useful, and full-field readings of structural behavior. We present a new video processing approach that allows the treatment of video data to obtain vibrational signatures of complex structures. Therefore, enabling the identification of very light structural damage in a controlled lab environment. The presented software approach is based on the use of state-of-the-art deep-learning video motion magnification techniques, which offer an easy-to-use, effective, full-field tool for SHM at a fraction of the cost of contact-based techniques.
 
-# Related Work
+# Related work
 
 This work is based on the method developed by [@LADOROIGE2022112218] for vibration-based damage detection and on the Swin Transformer Based Video Motion Magnification (STB-VMM) method [@lado2022_STB-VMM], which improves on the previous motion magnification backend [@oh_learning-based_2018] in terms of image quality.
 
