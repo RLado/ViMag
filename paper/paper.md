@@ -9,7 +9,8 @@ tags:
 authors:
   - name: Ricard Lado-Roigé
     orcid: 0000-0002-6421-7351
-    equal-contrib: true
+    equal-contrib: false
+    corresponding: false
     affiliation: "1"
   - name: Marco A. Pérez
     orcid: 0000-0003-4140-1823
@@ -47,12 +48,11 @@ This work is based on the method developed by [@LADOROIGE2022112218] for vibrati
 
 Other researchers have used similar techniques for vibration testing [@MOLINAVIEDMA2018245; @EITNER2021106995]. However, to the authors' knowledge non have released a software tool to go along with their publications. ViMag hopes to provide a simple interface to replicate some of these experiments using state-of-the-art learning-based video motion magnification.
 
+![Video sequence transformation to temporal slice \label{fig:slice_gen}](slice_gen.png){ width=80% }
 
 # Video processing workflow
 
 To begin the signal extraction process the user is asked to select a linear region of interest, preferably on a high contrast area of the frame. Then as stated in Fig.\autoref{fig:pipeline} the area surrounding the selected region of interest is magnified using STB-VMM throughout the target video sequence's length. The motion magnified result is then converted into a single image that represents movement in the temporal domain, achieved by extracting the selected linear region in each of the frames and stacking them horizontally as shown in Fig.\autoref{fig:slice_gen}. Finally, an edge detection algorithm is run over the temporal slice to determine the discrete temporal signal and convert it into an array of values over time. From this point on, existing signal processing techniques such as the Fourier transform can be used to extract further information.
-
-![Video sequence transformation to temporal slice \label{fig:slice_gen}](slice_gen.png){ width=90% }
 
 The STB-VMM model consists of three main functional blocks that extract features from frames, manipulate those features and finally reconstruct the frames. Implemented in PyTorch [@NEURIPS2019_9015], STB-VMM borrows ideas from [@ViT;@Vaswani2017AttentionIA;@SWIN] to improve the image quality offered by prior motion magnification methods at the cost of some performance. The lack of temporal filtering and the higher image quality offered by STB-VMM play an important role in applications that require precise magnification for vibration monitoring. Less-noisy images produce clearer signals that highlight abnormal behavior sooner.
 
