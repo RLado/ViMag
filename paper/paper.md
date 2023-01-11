@@ -32,7 +32,7 @@ Vision-based damage detection techniques can reduce sensor deployment costs whil
 
 # Related work
 
-This work is based on the method developed by [@LADOROIGE2022112218] for vibration-based damage detection and on the Swin Transformer Based Video Motion Magnification (STB-VMM) method [@lado2022_STB-VMM], which improves on the previous motion magnification backend [@oh_learning-based_2018] in terms of image quality.
+This work is based on the method developed by @LADOROIGE2022112218 for vibration-based damage detection and on the Swin Transformer Based Video Motion Magnification (STB-VMM) method [@lado2022_STB-VMM], which improves on the previous motion magnification backend [@oh_learning-based_2018] in terms of image quality.
 
 Other researchers have used similar techniques for vibration testing [@MOLINAVIEDMA2018245; @EITNER2021106995]. However, to the authors' knowledge, non have released a software tool to go along with their publications. ViMag offers a simple interface to replicate some of these experiments using state-of-the-art learning-based video motion magnification.
 
@@ -40,11 +40,11 @@ Other researchers have used similar techniques for vibration testing [@MOLINAVIE
 
 # Statement of need
 
-ViMag provides an easy-to-use graphical user interface aimed at extracting time-series signals of vibrating machinery and structure videos. This software enables the visualization of videos, selection of magnification area, and signal processing. Consequently, it facilitates and automates the technique developed by [@LADOROIGE2022112218] and allows machine learning layman to obtain reliable results without having to apply a manual multistage image processing pipeline. Therefore, this software facilitates the use of a camera as a functional replacement for an accelerometer by employing STB-VMM as the motion magnification backend.
+ViMag provides an easy-to-use graphical user interface aimed at extracting time-series signals of vibrating machinery and structure videos. This software enables the visualization of videos, selection of magnification area, and signal processing. Consequently, it facilitates and automates the technique developed by @LADOROIGE2022112218 and allows machine learning layman to obtain reliable results without having to apply a manual multistage image processing pipeline. Therefore, this software facilitates the use of a camera as a functional replacement for an accelerometer by employing STB-VMM as the motion magnification backend.
 
 The intended use of ViMag is to support the assessment of mechanical systems' performance, such as machines or structures. Researchers and engineers should consider employing condition monitoring or SHM methodologies on the outcomes yielded by ViMag. Such techniques are defined as the set of analysis and assessment tools applied to autonomously determine the integrity and durability of engineering structures. These techniques are aimed at tracking the operational status, assessing the condition, and alerting to the changes in the geometric or material properties that can affect a structure's overall performance, safety, reliability, and operational life [@frangopol_effects_1987;@cosenza_damage_2000].
 
-However, the use for ViMag might not be constrained to mechanical engineering exclusively, and some other interesting applications could also benefit from the software, such as medical applications [@10.1007/978-3-030-59716-0_34 or miscellaneous technical demos like recovering sound from video [@10.1145/2601097.2601119].
+However, the use for ViMag might not be constrained to mechanical engineering exclusively, and some other interesting applications could also benefit from the software, such as medical applications [@10.1007/978-3-030-59716-0_34] or miscellaneous technical demos like recovering sound from video [@10.1145/2601097.2601119].
 
 
 # Video processing workflow
@@ -53,7 +53,7 @@ However, the use for ViMag might not be constrained to mechanical engineering ex
 
 ![Video sequence transformation to temporal slice \label{fig:slice_gen}](slice_gen.png){ width=80% }
 
-Motion magnification acts like a microscope for motion, magnifying tiny movements on video sequences to retrieve seemingly invisible or almost imperceptible movements. Consequently, motion magnification may allow the naked eye to see a structure’s operating deflection shapes as they happened in real operating conditions. The STB-VMM model consists of three main functional blocks that extract features from frames, manipulate those features and finally reconstruct the frames. Implemented in PyTorch [@NEURIPS2019_9015], STB-VMM borrows ideas from [@ViT;@Vaswani2017AttentionIA;@SWIN] to improve the image quality offered by prior motion magnification methods at the cost of some performance. The lack of temporal filtering and the higher image quality offered by STB-VMM play an important role in applications that require precise magnification for vibration monitoring, as less-noisy images produce clearer signals that highlight abnormal behaviors sooner.
+Motion magnification acts like a microscope for motion, magnifying tiny movements on video sequences to retrieve seemingly invisible or almost imperceptible movements. Consequently, motion magnification may allow the naked eye to see a structure’s operating deflection shapes as they happened in real operating conditions. The STB-VMM model consists of three main functional blocks that extract features from frames, manipulate those features and finally reconstruct the frames. Implemented in PyTorch [@NEURIPS2019_9015], STB-VMM borrows ideas from @ViT;@Vaswani2017AttentionIA;@SWIN to improve the image quality offered by prior motion magnification methods at the cost of some performance. The lack of temporal filtering and the higher image quality offered by STB-VMM play an important role in applications that require precise magnification for vibration monitoring, as less-noisy images produce clearer signals that highlight abnormal behaviors sooner.
 
 
 # Acknowledgements
