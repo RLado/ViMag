@@ -266,5 +266,6 @@ trash/
 *.mp4
 *.mkv
 *.vl
+*.pdf
 *.code-workspace
 preferences.json
