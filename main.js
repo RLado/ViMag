@@ -36,7 +36,7 @@ app.getFileIcon('./img/icon.ico');
 // Define main window
 const createWindow = () => {
     const win = new BrowserWindow({
-        title: 'ViMag',
+        title: 'ViMag [LB-VMM]',
         width: 1200,
         height: 720,
         icon: './img/icon.ico',

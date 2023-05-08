@@ -296,7 +296,7 @@ async function processSlices() {
                         options = {
                             pythonPath: 'python/interpreter/ViMag_venv/bin/python',
                             args: [
-                                '--load_ckpt', './python/STB-VMM/ckpt/ckpt_e49.pth.tar',
+                                '--load_ckpt', './python/LB-VMM/ckpt/ckpt_e35.pth.tar',
                                 '--save_dir', prj.items[i].items[j].pathVmm,
                                 '--video_path', path.join(prj.items[i].items[j].pathOriginal, 'frame'),
                                 '--num_data', nframes,
@@ -310,7 +310,7 @@ async function processSlices() {
 
                         //console.log({ options });
 
-                        PythonShell.run('python/STB-VMM/run.py', options, function (errSTB, resultsSTB) {
+                        PythonShell.run('python/LB-VMM/test.py', options, function (errSTB, resultsSTB) {
                             if (errSTB) { // Error callback
                                 // Stop the spinning icon and restore functionality (if it was)
                                 document.getElementById("processSlicesBtn").innerHTML = '<i class="fa fa-sm fa-cog"></i>';

@@ -7,3 +7,6 @@
 [submodule "python/Tiled-STB-VMM"]
 	path = python/Tiled-STB-VMM
 	url = git@github.com:RLado/Tiled-STB-VMM.git
+[submodule "python/LB-VMM"]
+	path = python/LB-VMM
+	url = git@github.com:RLado/deep_motion_mag_torch.git
