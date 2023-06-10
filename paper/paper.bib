@@ -9,12 +9,16 @@
 	keywords = {Computer vision, Convolutional Neural Network, Damage identification, Deep learning, Frequency response functions, Natural frequency, Operating deflection shape, Structural assessment, Structural health monitoring, Vibration testing},
 }
 @article{lado2022_STB-VMM,
-	title={STB-VMM: Swin Transformer Based Video Motion Magnification},
-	doi = {10.48550/arXiv.2302.10001},
-	author={Lado-Roigé, Ricard and P{\'{e}}rez, Marco A.},
-	journal={Knowledge-Based Systems (Submitted July 12, 2022)},
-	year={2022},
-	note = { (Under review) }
+	title = {STB-VMM: Swin Transformer based Video Motion Magnification},
+	journal = {Knowledge-Based Systems},
+	pages = {110493},
+	year = {2023},
+	issn = {0950-7051},
+	doi = {10.1016/j.knosys.2023.110493},
+	author = {Ricard Lado-Roigé and Marco A. Pérez},
+	keywords = {Computer vision, Deep learning, Swin Transformer, Motion magnification, Image quality assessment},
+	abstract = {The goal of video motion magnification techniques is to magnify small motions in a video to reveal previously invisible or unseen movement. Its uses extend from bio-medical applications and deepfake detection to structural modal analysis and predictive maintenance. However, discerning small motion from noise is a complex task, especially when attempting to magnify very subtle, often sub-pixel movement. As a result, motion magnification techniques generally suffer from noisy and blurry outputs. This work presents a new state-of-the-art model based on the Swin Transformer, which offers better tolerance to noisy inputs as well as higher-quality outputs that exhibit less noise, blurriness, and artifacts than prior-art. Improvements in output image quality will enable more precise measurements for any application reliant on magnified video sequences, and may enable further development of video motion magnification techniques in new technical fields.}
+
 }
 @article{oh_learning-based_2018,
 	abstract = {Video motion magnification techniques allow us to see small motions previously invisible to the naked eyes, such as those of vibrating airplane wings, or swaying buildings under the influence of the wind. Because the motion is small, the magnification results are prone to noise or excessive blurring. The state of the art relies on hand-designed filters to extract motion representations that may not be optimal. In this paper, we seek to learn the filters directly from examples using deep convolutional neural networks. To make training tractable, we carefully design a synthetic dataset that captures small motion well, and use two-frame input for training. We show that the learned filters achieve high-quality results on real videos, with less ringing artifacts and better noise characteristics than previous methods. While our model is not trained with temporal filters, we found that the temporal filters can be used with our extracted representations up to a moderate magnification, enabling a frequency-based motion selection. Finally, we analyze the learned filters and show that they behave similarly to the derivative filters used in previous works.},
