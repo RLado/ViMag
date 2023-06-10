@@ -38,7 +38,7 @@ Other researchers have used similar techniques for vibration testing [@MOLINAVIE
 
 <!-- Motion magnification is a video processing technique that consists on the transformation of input frames to exaggerate motion. The goal of these algorithms is to amplify subtle motions in a video sequence, allowing the visualization of vibrations and deformations that would otherwise be invisible. -->
 
-Video motion magnification was first developed by @liu_motion_2005 opening a new range of possibilities for research and video postprocessing, however, this first approach produced numerous visual artifacts on top of being computationally expensive. Further developments by @wu_eulerian_2012 introduced a novel Eulerian approach to magnification that produced much cleaner results with less computational cost, paving the way for newer and more refined algorithms that produced increasingly better results such as [wadhwa_riesz_2014], [@oh_learning-based_2018] or [@lado2022_STB-VMM].
+Video motion magnification was first developed by @liu_motion_2005 and opened a new range of possibilities for research, however, this first approach produced numerous visual artifacts on top of being computationally expensive. Years later,further developments by @wu_eulerian_2012 introduced a novel Eulerian approach to magnification that produced much cleaner results with less computational cost, paving the way for newer and more refined algorithms that produced increasingly better results such as [@wadhwa_riesz_2014], [@oh_learning-based_2018] or [@lado2022_STB-VMM].
 
 ![Video sequence to signal pipeline \label{fig:pipeline}](pipeline_chart.png){ width=90% }
 
