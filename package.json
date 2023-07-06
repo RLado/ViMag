@@ -1,46 +1,23 @@
 {
   "name": "vimag",
-  "version": "0.1.6",
-  "description": "A video vibration toolbox",
+  "version": "0.2.0",
+  "description": "A visual vibration toolbox",
   "main": "main.js",
   "scripts": {
-    "dev_setup": "npm install && bash ./build_scripts/linux_x86_64.sh",
-    "dev_win_setup": "npm install && call ./build_scripts/windows_x86_64.bat && call ./build_scripts/windows_x86_64.bat",
-    "start": "electron-forge start",
-    "package": "electron-forge package",
-    "make": "electron-forge make"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron ."
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/RLado/ViMag.git"
   },
-  "keywords": [
-    "MotionMagnification",
-    "DeepLearning",
-    "SHM",
-    "ModalAnalysis"
-  ],
-  "author": "Ricard Lado",
+  "author": "Ricard Lado, Albert Forés",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/RLado/ViMag/issues"
   },
   "homepage": "https://github.com/RLado/ViMag#readme",
   "devDependencies": {
-    "@electron-forge/cli": "^6.0.0",
-    "@electron-forge/maker-flatpak": "^6.0.0",
-    "@electron-forge/maker-squirrel": "^6.0.0",
-    "@electron-forge/maker-zip": "^6.0.0",
-    "electron": "^v21.3.0"
-  },
-  "dependencies": {
-    "chart.js": "^3.8.0",
-    "csvtojson": "^2.0.10",
-    "dialogs": "git://github.com/RLado/dialogs_js.git",
-    "fs-extra": "^10.1.0",
-    "python-shell": "^3.0.1"
-  },
-  "config": {
-    "forge": "./forge.config.js"
+    "electron": "^25.2.0"
   }
 }

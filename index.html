@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <title>ViMag</title>
+    <link rel="stylesheet" type="text/css" href="./css/style.css">
+    <link rel="stylesheet" type="text/css" href="./css/font_awsome_all.css">
+    <script src="./frontend.js"></script>
+  </head>
+  <body>
+    <!-- Grid layout -->
+    <div class="grid-container">
+        <div class="iconBar">
+            <img class="icon" src="./icons/newProjectW.png" alt="New project" onmouseover="changeIcon('./icons/newProjectB.png')" onmouseout="changeIcon('./icons/newProjectW.png')">
+            <p>New</p>
+            <img class="icon" src="./icons/folder-open-regular.svg" alt="New project">
+            <p>Open</p>
+            <img class="icon" src="./icons/floppy-disk-solid.svg" alt="New project">
+            <p>Save</p>
+        </div>
+        <div class="item dataAcquisitionImage">
+            <div class="mainTitles"> <div class="verticalCentering"> Data acquisition </div> </div>
+        </div>
+        <div class="item magnifyMotionImageBW">
+            <div class="mainTitles">Magnify motion</div>
+        </div>
+        <div class="item magnifyDataAnalysisBW">
+            <div class="mainTitles">Data analysis</div>
+        </div>
+    </div>
+
+  </body>
+</html>
