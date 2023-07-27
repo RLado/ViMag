@@ -23,3 +23,7 @@ Use instructions & documentation can be found in the [wiki](https://github.com/R
 ## Screenshots
 <img src="https://user-images.githubusercontent.com/25719985/203531284-d5542d4e-17af-4665-8d01-5761acf24d18.png" width="600px"></img>
 <img src="https://user-images.githubusercontent.com/25719985/203725691-4490ef65-d695-4be2-b7f8-641c286abebe.png" width="600px"></img>
+
+> Do you want to contribute to this project?
+>
+>Check out our [contributing guidelines](https://github.com/RLado/ViMag/blob/master/CODE_OF_CONDUCT.md).
