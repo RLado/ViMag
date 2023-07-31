@@ -55,8 +55,8 @@ module.exports = {
             if (platform.platform === 'linux') {
                 // Move python files to the root of the package
                 fse.move(
-                    "./out/ViMag_v0.1.6/vimag-linux-x64/resources/app/python", 
-                    "./out/ViMag_v0.1.6/vimag-linux-x64/python"
+                    "./out/ViMag_v1.0.0/vimag-linux-x64/resources/app/python", 
+                    "./out/ViMag_v1.0.0/vimag-linux-x64/python"
                 );
             }
 
@@ -64,20 +64,20 @@ module.exports = {
             if (platform.platform === 'win32') {
                 // Move python files to the root of the package
                 fse.moveSync(
-                    "./out/ViMag_v0.1.6/vimag-win32-x64/resources/app/python", 
-                    "./out/ViMag_v0.1.6/vimag-win32-x64/python"
+                    "./out/ViMag_v1.0.0/vimag-win32-x64/resources/app/python", 
+                    "./out/ViMag_v1.0.0/vimag-win32-x64/python"
                 );
                 fse.copySync(
-                    "./out/ViMag_v0.1.6/vimag-win32-x64/python/interpreter/externals/tcltk-8.6.12.0/amd64/lib/tcl8.6",
-                    "./out/ViMag_v0.1.6/vimag-win32-x64/python/interpreter/PCbuild/lib/tcl8.6"
+                    "./out/ViMag_v1.0.0/vimag-win32-x64/python/interpreter/externals/tcltk-8.6.12.0/amd64/lib/tcl8.6",
+                    "./out/ViMag_v1.0.0/vimag-win32-x64/python/interpreter/PCbuild/lib/tcl8.6"
                 );
                 fse.copySync(
-                    "./out/ViMag_v0.1.6/vimag-win32-x64/python/interpreter/externals/tcltk-8.6.12.0/amd64/lib/tk8.6",
-                    "./out/ViMag_v0.1.6/vimag-win32-x64/python/interpreter/PCbuild/lib/tcl8.6/tk8.6"
+                    "./out/ViMag_v1.0.0/vimag-win32-x64/python/interpreter/externals/tcltk-8.6.12.0/amd64/lib/tk8.6",
+                    "./out/ViMag_v1.0.0/vimag-win32-x64/python/interpreter/PCbuild/lib/tcl8.6/tk8.6"
                 );
             }
         }, 
     },
-    buildIdentifier: 'ViMag_v0.1.6'
+    buildIdentifier: 'ViMag_v1.0.0'
 }
 
